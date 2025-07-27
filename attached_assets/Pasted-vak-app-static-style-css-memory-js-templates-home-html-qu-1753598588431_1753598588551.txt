@@ -1,0 +1,151 @@
+vak_app/
+├── static/
+│   ├── style.css
+│   └── memory.js
+├── templates/
+│   ├── home.html
+│   ├── quiz.html
+│   ├── result.html
+│   ├── memory.html
+│   ├── tips.html
+│   └── about.html
+├── app.py
+└── requirements.txt
+
+---
+
+### 📄 `requirements.txt`
+```
+flask
+```
+
+---
+
+### ⚙️ `app.py`
+```python
+from flask import Flask, render_template, request, redirect, session
+from collections import Counter
+import os
+
+app = Flask(__name__)
+app.secret_key = os.urandom(24)
+
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    if request.method == 'POST':
+        scores = {'Visual': 0, 'Auditory': 0, 'Kinesthetic': 0}
+        for i in range(1, 11):
+            answer = request.form.get(f'q{i}')
+            if answer in scores:
+                scores[answer] += 1
+        session['scores'] = scores
+        return redirect('/result')
+    return render_template('quiz.html')
+
+@app.route('/result')
+def result():
+    scores = session.get('scores', {'Visual': 0, 'Auditory': 0, 'Kinesthetic': 0})
+    dominant = max(scores, key=scores.get)
+    return render_template('result.html', scores=scores, dominant=dominant)
+
+@app.route('/tips')
+def tips():
+    scores = session.get('scores', {'Visual': 0, 'Auditory': 0, 'Kinesthetic': 0})
+    dominant = max(scores, key=scores.get)
+    return render_template('tips.html', style=dominant)
+
+@app.route('/memory')
+def memory():
+    return render_template('memory.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/restart')
+def restart():
+    session.clear()
+    return redirect('/')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+---
+
+### 📄 `memory.html`
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Memory Game</title>
+  <style>
+    .grid { display: grid; grid-template-columns: repeat(4, 80px); gap: 10px; justify-content: center; margin-top: 20px; }
+    .card { width: 80px; height: 80px; background: #ddd; font-size: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .matched { background: #4caf50; color: white; }
+  </style>
+  <script src="/static/memory.js" defer></script>
+</head>
+<body>
+  <h2>Memory Game</h2>
+  <p>Match the pairs below:</p>
+  <div class="grid" id="game-board"></div>
+</body>
+</html>
+```
+
+---
+
+### 📄 `memory.js`
+```javascript
+const emojis = ['✨','🐱','🌟','☀️','🌴','🌺'];
+let cards = [...emojis, ...emojis];
+let first = null, second = null;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function createBoard() {
+  shuffle(cards);
+  const board = document.getElementById('game-board');
+  cards.forEach((emoji, index) => {
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.dataset.emoji = emoji;
+    div.dataset.index = index;
+    div.onclick = flipCard;
+    board.appendChild(div);
+  });
+}
+
+function flipCard() {
+  if (this.classList.contains('matched') || this === first) return;
+  this.textContent = this.dataset.emoji;
+  if (!first) {
+    first = this;
+  } else {
+    second = this;
+    if (first.dataset.emoji === second.dataset.emoji) {
+      first.classList.add('matched');
+      second.classList.add('matched');
+      first = second = null;
+    } else {
+      setTimeout(() => {
+        first.textContent = '';
+        second.textContent = '';
+        first = second = null;
+      }, 800);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', createBoard);
+```
