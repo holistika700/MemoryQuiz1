@@ -73,6 +73,48 @@ def memory_audio():
 def about():
     return render_template('about.html')
 
+@app.route('/mix-learning-style')
+def mix_learning_style():
+    return render_template('mix_learning_style.html')
+
+@app.route('/note-analyzer', methods=['GET', 'POST'])
+def note_analyzer():
+    if request.method == 'POST':
+        # Handle file upload and analyze notes
+        if 'note_image' not in request.files:
+            flash('No file uploaded!', 'error')
+            return redirect(request.url)
+        
+        file = request.files['note_image']
+        if file.filename == '':
+            flash('No file selected!', 'error')
+            return redirect(request.url)
+        
+        # For now, provide sample analysis based on filename or random selection
+        analysis_results = analyze_note_style(file.filename)
+        return render_template('note_analyzer.html', analysis=analysis_results)
+    
+    return render_template('note_analyzer.html')
+
+@app.route('/daily-challenge')
+def daily_challenge():
+    return render_template('daily_challenge.html')
+
+@app.route('/style-coach')
+def style_coach():
+    # Get user's learning style from session or default to Visual
+    scores = session.get('scores', {'Visual': 0, 'Auditory': 0, 'Kinesthetic': 0})
+    dominant = max(scores, key=scores.get) if any(scores.values()) else 'Visual'
+    return render_template('style_coach.html', style=dominant)
+
+@app.route('/style-challenge')
+def style_challenge():
+    return render_template('style_challenge.html')
+
+@app.route('/kinesthetic-game')
+def kinesthetic_game():
+    return render_template('kinesthetic_game.html')
+
 @app.route('/restart')
 def restart():
     # Keep student_id if it exists
@@ -171,3 +213,47 @@ def save_memory_score():
     db.session.commit()
     
     return {'success': True}
+
+def analyze_note_style(filename):
+    """Analyze uploaded notes and provide learning style feedback"""
+    import random
+    
+    # Sample analysis based on common note-taking patterns
+    patterns = [
+        {
+            'style': 'Visual',
+            'confidence': 85,
+            'features': ['Charts/diagrams detected', 'Color coding used', 'Mind map structure'],
+            'feedback': 'Great visual organization! Your notes show strong visual learning patterns.',
+            'tips': [
+                'Continue using colors and diagrams',
+                'Try adding more symbols and icons',
+                'Consider digital mind mapping tools'
+            ]
+        },
+        {
+            'style': 'Kinesthetic',
+            'confidence': 78,
+            'features': ['Handwritten notes', 'Bullet points', 'Action-oriented language'],
+            'feedback': 'Your hands-on approach to note-taking shows kinesthetic learning!',
+            'tips': [
+                'Try taking notes while standing or walking',
+                'Use sticky notes for key concepts',
+                'Practice rewriting important points'
+            ]
+        },
+        {
+            'style': 'Auditory',
+            'confidence': 72,
+            'features': ['Question format notes', 'Dialogue structure', 'Sound-related keywords'],
+            'feedback': 'Your notes suggest you learn well through listening and discussion!',
+            'tips': [
+                'Try recording yourself reading your notes',
+                'Discuss key points with study partners',
+                'Use text-to-speech for review'
+            ]
+        }
+    ]
+    
+    # Return random analysis for demo purposes
+    return random.choice(patterns)

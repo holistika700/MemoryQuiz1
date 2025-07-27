@@ -234,3 +234,69 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* Feature Cards */
+.feature-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--bs-primary);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Game Cards */
+.game-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.game-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--bs-success);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Purple Button Class */
+.btn-purple {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+.btn-purple:hover {
+    background-color: #5a359a;
+    border-color: #5a359a;
+    color: white;
+}
+
+.btn-outline-purple {
+    border-color: #6f42c1;
+    color: #6f42c1;
+}
+
+.btn-outline-purple:hover {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+/* Orange variations */
+.text-orange {
+    color: #fd7e14 !important;
+}
+
+.bg-orange {
+    background-color: #fd7e14 !important;
+}
+
+/* Orange subtle variations */
+.text-orange-subtle {
+    background-color: #fff3cd !important;
+}
+
+.bg-orange-subtle {
+    background-color: #fff3cd !important;
+}

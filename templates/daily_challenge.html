@@ -1,0 +1,609 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Challenge Spinner{% endblock %}
+
+{% block extra_head %}
+<style>
+    .spinner-container {
+        position: relative;
+        width: 350px;
+        height: 350px;
+        margin: 0 auto;
+    }
+    
+    .spinner-wheel {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 8px solid var(--bs-dark);
+        position: relative;
+        transition: transform 3s cubic-bezier(0.23, 1, 0.32, 1);
+        background: conic-gradient(
+            #FF6B6B 0deg 51.43deg,
+            #4ECDC4 51.43deg 102.86deg,
+            #45B7D1 102.86deg 154.29deg,
+            #FFA07A 154.29deg 205.72deg,
+            #98D8C8 205.72deg 257.15deg,
+            #F7DC6F 257.15deg 308.58deg,
+            #BB8FCE 308.58deg 360deg
+        );
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .spinner-pointer {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 30px solid var(--bs-warning);
+        z-index: 10;
+        filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+    }
+    
+    .spinner-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: var(--bs-dark);
+        border-radius: 50%;
+        border: 4px solid var(--bs-warning);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .challenge-sections {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+    }
+    
+    .section-label {
+        position: absolute;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        text-align: center;
+        width: 80px;
+        transform-origin: center;
+    }
+    
+    /* Position labels around the circle */
+    .section-label:nth-child(1) { top: 20px; left: 135px; }
+    .section-label:nth-child(2) { top: 70px; right: 20px; }
+    .section-label:nth-child(3) { bottom: 70px; right: 20px; }
+    .section-label:nth-child(4) { bottom: 20px; left: 135px; }
+    .section-label:nth-child(5) { bottom: 70px; left: 20px; }
+    .section-label:nth-child(6) { top: 70px; left: 20px; }
+    .section-label:nth-child(7) { top: 135px; left: 135px; }
+    
+    .spin-button {
+        background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
+        border: none;
+        color: white;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .spin-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(45deg, var(--bs-info), var(--bs-primary));
+    }
+    
+    .spin-button:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+    
+    .challenge-result {
+        background: linear-gradient(135deg, var(--bs-success-subtle), var(--bs-info-subtle));
+        border: 2px solid var(--bs-success);
+        border-radius: 15px;
+        transform: scale(0);
+        transition: transform 0.5s ease;
+    }
+    
+    .challenge-result.show {
+        transform: scale(1);
+    }
+    
+    .countdown-timer {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+    
+    .progress-ring {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .progress-circle {
+        fill: none;
+        stroke: var(--bs-success);
+        stroke-width: 4;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 1s linear;
+    }
+    
+    .streak-badge {
+        background: linear-gradient(45deg, var(--bs-warning), var(--bs-orange));
+        color: var(--bs-dark);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h2>🧭 Daily Challenge Spinner</h2>
+            <p class="lead">Spin the wheel to get your personalized learning challenge for today!</p>
+            
+            <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
+                <div class="streak-badge">
+                    <i class="fas fa-fire me-2"></i>
+                    <span id="streakCount">0</span> Day Streak
+                </div>
+                <div class="badge bg-info fs-6">
+                    <i class="fas fa-calendar me-2"></i>
+                    <span id="challengeDate">Today</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="spinner-container">
+                            <div class="spinner-pointer"></div>
+                            <div class="spinner-wheel" id="spinnerWheel">
+                                <div class="challenge-sections">
+                                    <div class="section-label">Visual<br>Learning</div>
+                                    <div class="section-label">Audio<br>Practice</div>
+                                    <div class="section-label">Hands-On<br>Activity</div>
+                                    <div class="section-label">Memory<br>Game</div>
+                                    <div class="section-label">Quick<br>Review</div>
+                                    <div class="section-label">Creative<br>Task</div>
+                                    <div class="section-label">Social<br>Learning</div>
+                                </div>
+                            </div>
+                            <div class="spinner-center">
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn spin-button" id="spinButton" onclick="spinWheel()">
+                                <i class="fas fa-play me-2"></i>Spin for Today's Challenge!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>How It Works</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol class="list-unstyled">
+                            <li class="mb-2">
+                                <span class="badge bg-primary rounded-circle me-2">1</span>
+                                Spin the wheel once per day
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-primary rounded-circle me-2">2</span>
+                                Get a personalized challenge
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-primary rounded-circle me-2">3</span>
+                                Complete it to build your streak
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-primary rounded-circle me-2">4</span>
+                                Come back tomorrow for more!
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-trophy me-2"></i>Challenge Stats</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="fs-4 fw-bold text-success" id="completedCount">0</div>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="fs-4 fw-bold text-info" id="totalSpins">0</div>
+                                <small class="text-muted">Total Spins</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4" id="challengeResult" style="display: none;">
+            <div class="col-12">
+                <div class="challenge-result">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4 class="mb-3">
+                                    <i id="challengeIcon" class="me-2"></i>
+                                    <span id="challengeTitle">Your Challenge</span>
+                                </h4>
+                                
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-target me-2"></i>Today's Mission</h6>
+                                    <p id="challengeDescription" class="mb-0">Challenge description will appear here</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6><i class="fas fa-lightbulb me-2"></i>Quick Tips:</h6>
+                                    <ul id="challengeTips">
+                                        <!-- Tips will be added here -->
+                                    </ul>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button class="btn btn-success btn-lg" onclick="markCompleted()">
+                                        <i class="fas fa-check me-2"></i>Mark as Completed
+                                    </button>
+                                    <button class="btn btn-outline-primary ms-2" onclick="spinAgain()">
+                                        <i class="fas fa-redo me-2"></i>Spin Again Tomorrow
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h6>Challenge Timer</h6>
+                                    <div class="countdown-timer" id="challengeTimer">15:00</div>
+                                    <svg class="progress-ring">
+                                        <circle class="progress-circle" cx="50" cy="50" r="45" id="progressCircle"></circle>
+                                    </svg>
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="startTimer()">
+                                            <i class="fas fa-play me-1"></i>Start
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary ms-1" onclick="pauseTimer()">
+                                            <i class="fas fa-pause me-1"></i>Pause
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning ms-1" onclick="resetTimer()">
+                                            <i class="fas fa-redo me-1"></i>Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let isSpinning = false;
+let timerInterval = null;
+let timeLeft = 900; // 15 minutes in seconds
+let timerRunning = false;
+
+const challenges = [
+    {
+        title: "Visual Learning Challenge",
+        icon: "fas fa-eye text-primary",
+        description: "Create a colorful mind map of something you're learning. Use at least 3 colors and include drawings or symbols.",
+        tips: [
+            "Use different colors for different topics",
+            "Add small drawings and symbols",
+            "Connect related ideas with lines",
+            "Keep it fun and creative!"
+        ]
+    },
+    {
+        title: "Audio Practice Challenge",
+        icon: "fas fa-volume-up text-success",
+        description: "Record yourself explaining a concept you learned recently, then listen back and take notes.",
+        tips: [
+            "Speak clearly and slowly",
+            "Explain it like you're teaching a friend",
+            "Listen for areas to improve",
+            "Try adding background music"
+        ]
+    },
+    {
+        title: "Hands-On Activity",
+        icon: "fas fa-hand-paper text-warning",
+        description: "Build or create something related to your studies using physical materials or hands-on practice.",
+        tips: [
+            "Use everyday objects as props",
+            "Practice writing by hand",
+            "Try role-playing scenarios",
+            "Make it interactive and engaging"
+        ]
+    },
+    {
+        title: "Memory Game Challenge",
+        icon: "fas fa-brain text-info",
+        description: "Play one of our memory games for 10 minutes, then apply the same memory techniques to your studies.",
+        tips: [
+            "Focus on pattern recognition",
+            "Use visualization techniques",
+            "Practice active recall",
+            "Take short breaks between rounds"
+        ]
+    },
+    {
+        title: "Quick Review Session",
+        icon: "fas fa-clock text-danger",
+        description: "Set a 15-minute timer and review your most recent notes using active recall techniques.",
+        tips: [
+            "Cover your notes and try to remember",
+            "Write down key points from memory",
+            "Focus on the most important concepts",
+            "Use the Pomodoro technique"
+        ]
+    },
+    {
+        title: "Creative Learning Task",
+        icon: "fas fa-palette text-purple",
+        description: "Turn your learning into something creative: a song, poem, drawing, or story about the topic.",
+        tips: [
+            "Don't worry about being perfect",
+            "Use rhymes or rhythms to help memory",
+            "Include key facts in your creation",
+            "Share it with friends or family"
+        ]
+    },
+    {
+        title: "Social Learning Challenge",
+        icon: "fas fa-users text-orange",
+        description: "Teach someone else something you learned, or discuss a topic with a friend or family member.",
+        tips: [
+            "Start with what they already know",
+            "Use simple, clear explanations",
+            "Ask them questions too",
+            "Learn from their perspective"
+        ]
+    }
+];
+
+function spinWheel() {
+    if (isSpinning) return;
+    
+    // Check if already spun today
+    const lastSpin = localStorage.getItem('lastSpinDate');
+    const today = new Date().toDateString();
+    
+    if (lastSpin === today) {
+        alert('You already spun today! Come back tomorrow for a new challenge.');
+        return;
+    }
+    
+    isSpinning = true;
+    const button = document.getElementById('spinButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Spinning...';
+    
+    // Random rotation (multiple full rotations plus random position)
+    const randomRotation = 1080 + Math.random() * 1440; // 3-7 full rotations
+    const wheel = document.getElementById('spinnerWheel');
+    wheel.style.transform = `rotate(${randomRotation}deg)`;
+    
+    // Calculate which section was selected
+    const normalizedRotation = randomRotation % 360;
+    const sectionSize = 360 / 7;
+    const selectedIndex = Math.floor((360 - normalizedRotation + sectionSize/2) / sectionSize) % 7;
+    
+    setTimeout(() => {
+        showChallenge(selectedIndex);
+        isSpinning = false;
+        
+        // Update stats
+        updateSpinStats();
+        localStorage.setItem('lastSpinDate', today);
+        
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-check me-2"></i>Spun for Today!';
+    }, 3000);
+}
+
+function showChallenge(index) {
+    const challenge = challenges[index];
+    
+    document.getElementById('challengeIcon').className = challenge.icon;
+    document.getElementById('challengeTitle').textContent = challenge.title;
+    document.getElementById('challengeDescription').textContent = challenge.description;
+    
+    const tipsList = document.getElementById('challengeTips');
+    tipsList.innerHTML = '';
+    challenge.tips.forEach(tip => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-check text-success me-2"></i>${tip}`;
+        tipsList.appendChild(li);
+    });
+    
+    const resultDiv = document.getElementById('challengeResult');
+    resultDiv.style.display = 'block';
+    setTimeout(() => {
+        resultDiv.querySelector('.challenge-result').classList.add('show');
+    }, 100);
+    
+    // Reset timer
+    resetTimer();
+}
+
+function markCompleted() {
+    const completed = parseInt(localStorage.getItem('completedChallenges') || '0') + 1;
+    localStorage.setItem('completedChallenges', completed);
+    
+    const streak = parseInt(localStorage.getItem('currentStreak') || '0') + 1;
+    localStorage.setItem('currentStreak', streak);
+    
+    updateStats();
+    
+    // Show success message
+    const button = event.target;
+    button.innerHTML = '<i class="fas fa-trophy me-2"></i>Completed!';
+    button.classList.remove('btn-success');
+    button.classList.add('btn-warning');
+    button.disabled = true;
+    
+    // Celebrate
+    confetti();
+}
+
+function spinAgain() {
+    localStorage.removeItem('lastSpinDate');
+    location.reload();
+}
+
+function updateSpinStats() {
+    const total = parseInt(localStorage.getItem('totalSpins') || '0') + 1;
+    localStorage.setItem('totalSpins', total);
+    updateStats();
+}
+
+function updateStats() {
+    const completed = localStorage.getItem('completedChallenges') || '0';
+    const total = localStorage.getItem('totalSpins') || '0';
+    const streak = localStorage.getItem('currentStreak') || '0';
+    
+    document.getElementById('completedCount').textContent = completed;
+    document.getElementById('totalSpins').textContent = total;
+    document.getElementById('streakCount').textContent = streak;
+}
+
+// Timer functions
+function startTimer() {
+    if (timerRunning) return;
+    timerRunning = true;
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        updateProgressRing();
+        
+        if (timeLeft <= 0) {
+            pauseTimer();
+            alert('Time\'s up! Great job working on your challenge!');
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    timerRunning = false;
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+}
+
+function resetTimer() {
+    pauseTimer();
+    timeLeft = 900; // 15 minutes
+    updateTimerDisplay();
+    updateProgressRing();
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('challengeTimer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function updateProgressRing() {
+    const progress = (900 - timeLeft) / 900;
+    const circumference = 283;
+    const offset = circumference - (progress * circumference);
+    document.getElementById('progressCircle').style.strokeDashoffset = offset;
+}
+
+// Simple confetti effect
+function confetti() {
+    for (let i = 0; i < 50; i++) {
+        createConfettiPiece();
+    }
+}
+
+function createConfettiPiece() {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+    const confetti = document.createElement('div');
+    confetti.style.position = 'fixed';
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.top = '-10px';
+    confetti.style.width = '10px';
+    confetti.style.height = '10px';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.borderRadius = '50%';
+    confetti.style.zIndex = '1000';
+    confetti.style.pointerEvents = 'none';
+    
+    document.body.appendChild(confetti);
+    
+    const animation = confetti.animate([
+        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+        { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+    ], {
+        duration: Math.random() * 2000 + 1000,
+        easing: 'ease-out'
+    });
+    
+    animation.onfinish = () => confetti.remove();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateStats();
+    
+    const today = new Date().toDateString();
+    document.getElementById('challengeDate').textContent = 
+        new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    
+    // Check if already spun today
+    const lastSpin = localStorage.getItem('lastSpinDate');
+    if (lastSpin === today) {
+        const button = document.getElementById('spinButton');
+        button.innerHTML = '<i class="fas fa-check me-2"></i>Already Spun Today!';
+        button.disabled = true;
+    }
+    
+    updateTimerDisplay();
+});
+</script>
+{% endblock %}

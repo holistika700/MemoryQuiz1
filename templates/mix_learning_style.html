@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Mix Your Learning Style{% endblock %}
+
+{% block extra_head %}
+<style>
+    .pie-chart-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: conic-gradient(
+            #007bff 0deg 120deg,
+            #28a745 120deg 240deg,
+            #ffc107 240deg 360deg
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .pie-center {
+        width: 120px;
+        height: 120px;
+        background: var(--bs-dark);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid var(--bs-border-color);
+    }
+    
+    .draggable-icon {
+        width: 60px;
+        height: 60px;
+        border: 2px solid var(--bs-border-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        margin: 10px;
+        transition: all 0.3s ease;
+        font-size: 1.5rem;
+    }
+    
+    .draggable-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .draggable-icon.dragging {
+        cursor: grabbing;
+        opacity: 0.7;
+    }
+    
+    .visual-icon {
+        background: var(--bs-primary);
+        color: white;
+    }
+    
+    .auditory-icon {
+        background: var(--bs-success);
+        color: white;
+    }
+    
+    .kinesthetic-icon {
+        background: var(--bs-warning);
+        color: var(--bs-dark);
+    }
+    
+    .drop-zone {
+        min-height: 100px;
+        border: 2px dashed var(--bs-border-color);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .drop-zone.drag-over {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary-subtle);
+    }
+    
+    .percentage-display {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+    }
+    
+    .slider-container {
+        margin: 20px 0;
+    }
+    
+    .custom-range {
+        width: 100%;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h2>🧪 Mix Your Learning Style</h2>
+            <p class="lead">Create your perfect learning blend! Adjust the sliders to match how you like to study.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Your Learning Style Mix</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="pie-chart-container" id="pieChart">
+                            <div class="pie-center">
+                                <div class="percentage-display" id="centerDisplay">
+                                    Your<br>Mix
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-eye text-primary me-2"></i>Visual
+                                    </label>
+                                    <input type="range" class="form-range" id="visualSlider" min="0" max="100" value="33">
+                                    <div class="text-center">
+                                        <span id="visualPercent" class="badge bg-primary">33%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-volume-up text-success me-2"></i>Auditory
+                                    </label>
+                                    <input type="range" class="form-range" id="auditorySlider" min="0" max="100" value="33">
+                                    <div class="text-center">
+                                        <span id="auditoryPercent" class="badge bg-success">33%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-hand-paper text-warning me-2"></i>Kinesthetic
+                                    </label>
+                                    <input type="range" class="form-range" id="kinestheticSlider" min="0" max="100" value="34">
+                                    <div class="text-center">
+                                        <span id="kinestheticPercent" class="badge bg-warning text-dark">34%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <button class="btn btn-primary" onclick="generateCustomTips()">
+                                <i class="fas fa-magic me-2"></i>Get My Custom Tips
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="resetMix()">
+                                <i class="fas fa-redo me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Learning Style Guide</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-eye text-primary me-2"></i>
+                                <strong>Visual</strong>
+                            </div>
+                            <small class="text-muted">Learning through seeing: charts, diagrams, colors</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-volume-up text-success me-2"></i>
+                                <strong>Auditory</strong>
+                            </div>
+                            <small class="text-muted">Learning through hearing: lectures, discussions, music</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-hand-paper text-warning me-2"></i>
+                                <strong>Kinesthetic</strong>
+                            </div>
+                            <small class="text-muted">Learning through doing: hands-on, movement, practice</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Quick Presets</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="setPreset(70, 20, 10)">
+                                Strong Visual
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="setPreset(20, 70, 10)">
+                                Strong Auditory
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="setPreset(10, 20, 70)">
+                                Strong Kinesthetic
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="setPreset(33, 33, 34)">
+                                Balanced Mix
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4" id="customTips" style="display: none;">
+            <div class="col-12">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Your Custom Learning Tips</h5>
+                    </div>
+                    <div class="card-body" id="customTipsContent">
+                        <!-- Custom tips will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let visualPercent = 33;
+let auditoryPercent = 33;
+let kinestheticPercent = 34;
+
+function updatePieChart() {
+    const total = visualPercent + auditoryPercent + kinestheticPercent;
+    if (total === 0) return;
+    
+    const visualDeg = (visualPercent / total) * 360;
+    const auditoryDeg = (auditoryPercent / total) * 360;
+    const kinestheticDeg = (kinestheticPercent / total) * 360;
+    
+    const pieChart = document.getElementById('pieChart');
+    pieChart.style.background = `conic-gradient(
+        #007bff 0deg ${visualDeg}deg,
+        #28a745 ${visualDeg}deg ${visualDeg + auditoryDeg}deg,
+        #ffc107 ${visualDeg + auditoryDeg}deg 360deg
+    )`;
+    
+    // Update percentage displays
+    document.getElementById('visualPercent').textContent = `${Math.round((visualPercent / total) * 100)}%`;
+    document.getElementById('auditoryPercent').textContent = `${Math.round((auditoryPercent / total) * 100)}%`;
+    document.getElementById('kinestheticPercent').textContent = `${Math.round((kinestheticPercent / total) * 100)}%`;
+}
+
+function setupSliders() {
+    const visualSlider = document.getElementById('visualSlider');
+    const auditorySlider = document.getElementById('auditorySlider');
+    const kinestheticSlider = document.getElementById('kinestheticSlider');
+    
+    visualSlider.addEventListener('input', function() {
+        visualPercent = parseInt(this.value);
+        updatePieChart();
+    });
+    
+    auditorySlider.addEventListener('input', function() {
+        auditoryPercent = parseInt(this.value);
+        updatePieChart();
+    });
+    
+    kinestheticSlider.addEventListener('input', function() {
+        kinestheticPercent = parseInt(this.value);
+        updatePieChart();
+    });
+}
+
+function setPreset(visual, auditory, kinesthetic) {
+    visualPercent = visual;
+    auditoryPercent = auditory;
+    kinestheticPercent = kinesthetic;
+    
+    document.getElementById('visualSlider').value = visual;
+    document.getElementById('auditorySlider').value = auditory;
+    document.getElementById('kinestheticSlider').value = kinesthetic;
+    
+    updatePieChart();
+}
+
+function resetMix() {
+    setPreset(33, 33, 34);
+    document.getElementById('customTips').style.display = 'none';
+}
+
+function generateCustomTips() {
+    const total = visualPercent + auditoryPercent + kinestheticPercent;
+    const vPercent = (visualPercent / total) * 100;
+    const aPercent = (auditoryPercent / total) * 100;
+    const kPercent = (kinestheticPercent / total) * 100;
+    
+    let tips = [];
+    let studyPlan = '';
+    
+    if (vPercent >= 40) {
+        tips.push('Use colorful notes and diagrams - your visual strength is dominant!');
+        tips.push('Create mind maps and flowcharts for complex topics');
+        tips.push('Use highlighters and organize information spatially');
+    }
+    
+    if (aPercent >= 40) {
+        tips.push('Record yourself reading notes and play them back');
+        tips.push('Join study groups for discussion and explanation');
+        tips.push('Use music or background sounds while studying');
+    }
+    
+    if (kPercent >= 40) {
+        tips.push('Take frequent breaks to move around');
+        tips.push('Use hands-on activities and real examples');
+        tips.push('Write notes by hand rather than typing');
+    }
+    
+    // Mixed learning tips
+    if (Math.max(vPercent, aPercent, kPercent) < 50) {
+        tips.push('You\'re a balanced learner! Use multiple techniques:');
+        tips.push('Combine visual aids with verbal explanations');
+        tips.push('Practice concepts through different methods');
+    }
+    
+    // Generate study plan
+    studyPlan = `
+        <h6>Recommended Study Session (60 minutes):</h6>
+        <ul>
+            <li><strong>${Math.round(vPercent)}% Visual:</strong> ${Math.round(vPercent * 0.6)} minutes of reading/reviewing visual materials</li>
+            <li><strong>${Math.round(aPercent)}% Auditory:</strong> ${Math.round(aPercent * 0.6)} minutes of discussion/listening</li>
+            <li><strong>${Math.round(kPercent)}% Kinesthetic:</strong> ${Math.round(kPercent * 0.6)} minutes of hands-on practice</li>
+        </ul>
+    `;
+    
+    const tipsHtml = `
+        <div class="row">
+            <div class="col-md-8">
+                <h6>Your Personalized Tips:</h6>
+                <ul>
+                    ${tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                ${studyPlan}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('customTipsContent').innerHTML = tipsHtml;
+    document.getElementById('customTips').style.display = 'block';
+    
+    // Scroll to tips
+    document.getElementById('customTips').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setupSliders();
+    updatePieChart();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}Note Analyzer{% endblock %}
+
+{% block extra_head %}
+<style>
+    .upload-area {
+        border: 3px dashed var(--bs-border-color);
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: var(--bs-light-subtle);
+    }
+    
+    .upload-area:hover {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary-subtle);
+    }
+    
+    .upload-area.dragover {
+        border-color: var(--bs-success);
+        background: var(--bs-success-subtle);
+        transform: scale(1.02);
+    }
+    
+    .analysis-result {
+        background: linear-gradient(135deg, var(--bs-info-subtle), var(--bs-primary-subtle));
+        border-radius: 15px;
+        border: 2px solid var(--bs-info);
+    }
+    
+    .confidence-bar {
+        height: 10px;
+        background: var(--bs-secondary);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--bs-warning), var(--bs-success));
+        transition: width 0.8s ease;
+    }
+    
+    .feature-badge {
+        background: var(--bs-info);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        margin: 0.2rem;
+        display: inline-block;
+    }
+    
+    .sample-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .sample-note {
+        border: 2px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .sample-note:hover {
+        border-color: var(--bs-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .camera-preview {
+        max-width: 100%;
+        border-radius: 10px;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h2>📷 Smart Note Analyzer</h2>
+            <p class="lead">Upload a photo of your notes and discover your learning style patterns!</p>
+        </div>
+
+        {% if not analysis %}
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                        <h5>Drop your note image here or click to upload</h5>
+                        <p class="text-muted">Supports JPG, PNG, and PDF files</p>
+                        <input type="file" name="note_image" id="fileInput" accept="image/*,.pdf" style="display: none;">
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-camera me-2"></i>Choose File
+                        </button>
+                        <button type="button" class="btn btn-outline-primary ms-2" onclick="openCamera()">
+                            <i class="fas fa-camera me-2"></i>Take Photo
+                        </button>
+                    </div>
+                    
+                    <div id="previewArea" style="display: none;" class="mt-3">
+                        <h6>Preview:</h6>
+                        <img id="imagePreview" class="camera-preview" alt="Preview">
+                        <div class="text-center mt-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-search me-2"></i>Analyze Notes
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearPreview()">
+                                <i class="fas fa-times me-2"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <h6 class="text-muted">Don't have notes to upload? Try these samples:</h6>
+                    <div class="sample-gallery">
+                        <div class="sample-note" onclick="analyzeSample('visual')">
+                            <i class="fas fa-eye fa-2x text-primary mb-2"></i>
+                            <div><strong>Visual Notes</strong></div>
+                            <small class="text-muted">Mind maps & diagrams</small>
+                        </div>
+                        
+                        <div class="sample-note" onclick="analyzeSample('auditory')">
+                            <i class="fas fa-volume-up fa-2x text-success mb-2"></i>
+                            <div><strong>Auditory Notes</strong></div>
+                            <small class="text-muted">Question format</small>
+                        </div>
+                        
+                        <div class="sample-note" onclick="analyzeSample('kinesthetic')">
+                            <i class="fas fa-hand-paper fa-2x text-warning mb-2"></i>
+                            <div><strong>Kinesthetic Notes</strong></div>
+                            <small class="text-muted">Bullet points & lists</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- Analysis Results -->
+        <div class="analysis-result">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4 class="mb-3">
+                            {% if analysis.style == 'Visual' %}
+                                <i class="fas fa-eye text-primary me-2"></i>Visual Learning Detected!
+                            {% elif analysis.style == 'Auditory' %}
+                                <i class="fas fa-volume-up text-success me-2"></i>Auditory Learning Detected!
+                            {% else %}
+                                <i class="fas fa-hand-paper text-warning me-2"></i>Kinesthetic Learning Detected!
+                            {% endif %}
+                        </h4>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>Confidence Level</span>
+                                <span class="fw-bold">{{ analysis.confidence }}%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: {{ analysis.confidence }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Analysis</h6>
+                            <p class="mb-0">{{ analysis.feedback }}</p>
+                        </div>
+                        
+                        <h6>Detected Features:</h6>
+                        <div class="mb-3">
+                            {% for feature in analysis.features %}
+                            <span class="feature-badge">{{ feature }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Personalized Tips</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    {% for tip in analysis.tips %}
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>{{ tip }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('note_analyzer') }}" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Analyze Another Note
+                    </a>
+                    <a href="{{ url_for('tips') }}" class="btn btn-outline-success ms-2">
+                        <i class="fas fa-graduation-cap me-2"></i>Get More Learning Tips
+                    </a>
+                    {% if analysis.style == 'Visual' %}
+                        <a href="{{ url_for('memory_visual') }}" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-gamepad me-2"></i>Try Visual Memory Game
+                        </a>
+                    {% elif analysis.style == 'Auditory' %}
+                        <a href="{{ url_for('memory_audio') }}" class="btn btn-outline-success ms-2">
+                            <i class="fas fa-gamepad me-2"></i>Try Audio Memory Game
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('kinesthetic_game') }}" class="btn btn-outline-warning ms-2">
+                            <i class="fas fa-gamepad me-2"></i>Try Kinesthetic Game
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Camera Modal -->
+<div class="modal fade" id="cameraModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Take Photo of Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="cameraVideo" autoplay style="width: 100%; max-width: 500px; border-radius: 10px;"></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="capturePhoto()">
+                        <i class="fas fa-camera me-2"></i>Capture
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2" onclick="stopCamera()">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cameraStream = null;
+
+// File upload handling
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('previewArea').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Drag and drop handling
+const uploadArea = document.getElementById('uploadArea');
+
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('fileInput').files = files;
+        const event = new Event('change', { bubbles: true });
+        document.getElementById('fileInput').dispatchEvent(event);
+    }
+});
+
+// Sample analysis
+function analyzeSample(type) {
+    const form = document.getElementById('uploadForm');
+    const formData = new FormData();
+    formData.append('note_image', new File([''], `sample_${type}_notes.jpg`, { type: 'image/jpeg' }));
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            window.location.reload();
+        }
+    });
+}
+
+// Camera functions
+async function openCamera() {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'environment' // Use back camera on mobile
+            } 
+        });
+        
+        const video = document.getElementById('cameraVideo');
+        video.srcObject = cameraStream;
+        
+        const modal = new bootstrap.Modal(document.getElementById('cameraModal'));
+        modal.show();
+    } catch (error) {
+        alert('Camera access denied or not available. Please use file upload instead.');
+        console.error('Camera error:', error);
+    }
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    const context = canvas.getContext('2d');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+    
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], 'camera_notes.jpg', { type: 'image/jpeg' });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        document.getElementById('fileInput').files = dataTransfer.files;
+        
+        // Trigger preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('previewArea').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        
+        stopCamera();
+        bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
+    }, 'image/jpeg', 0.8);
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+}
+
+function clearPreview() {
+    document.getElementById('previewArea').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+}
+
+// Click to upload
+uploadArea.addEventListener('click', function() {
+    document.getElementById('fileInput').click();
+});
+</script>
+{% endblock %}

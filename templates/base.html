@@ -41,6 +41,19 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('tips') }}">Learning Tips</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Smart Features
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('mix_learning_style') }}">🧪 Mix Your Style</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('note_analyzer') }}">📷 Note Analyzer</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('daily_challenge') }}">🧭 Daily Challenge</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('style_coach') }}">🎓 Study Coach</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('style_challenge') }}">💡 Style Challenge</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('kinesthetic_game') }}">🏃 Kinesthetic Game</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('about') }}">About</a>
                     </li>

@@ -1,0 +1,664 @@
+{% extends "base.html" %}
+
+{% block title %}Study Style Coach{% endblock %}
+
+{% block extra_head %}
+<style>
+    .coach-container {
+        background: linear-gradient(135deg, var(--bs-primary-subtle), var(--bs-info-subtle));
+        border-radius: 20px;
+        border: 3px solid var(--bs-primary);
+        padding: 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .coach-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        margin: 0 auto 20px;
+        background: var(--bs-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        animation: coachBounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes coachBounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+    }
+    
+    .coach-speech {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin: 20px 0;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .coach-speech::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-bottom: 15px solid white;
+    }
+    
+    .daily-tip {
+        background: var(--bs-warning-subtle);
+        border: 2px solid var(--bs-warning);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .progress-tracker {
+        background: var(--bs-light);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .achievement-badge {
+        display: inline-block;
+        background: linear-gradient(45deg, var(--bs-warning), var(--bs-orange));
+        color: var(--bs-dark);
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin: 0.25rem;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .motivational-quote {
+        font-style: italic;
+        font-size: 1.1rem;
+        color: var(--bs-primary);
+        margin: 15px 0;
+        padding: 15px;
+        border-left: 4px solid var(--bs-primary);
+        background: var(--bs-primary-subtle);
+    }
+    
+    .action-button {
+        background: linear-gradient(45deg, var(--bs-success), var(--bs-success-subtle));
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 25px;
+        margin: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+    }
+    
+    .floating-icon {
+        position: absolute;
+        opacity: 0.3;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(10deg); }
+    }
+    
+    .chat-interface {
+        max-height: 300px;
+        overflow-y: auto;
+        background: var(--bs-light);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    
+    .user-message {
+        background: var(--bs-primary);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 15px 15px 5px 15px;
+        margin: 5px 0 5px auto;
+        max-width: 80%;
+        text-align: right;
+    }
+    
+    .coach-message {
+        background: white;
+        color: var(--bs-dark);
+        padding: 10px 15px;
+        border-radius: 15px 15px 15px 5px;
+        margin: 5px auto 5px 0;
+        max-width: 80%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h2>🎓 Your Personal Study Coach</h2>
+            <p class="lead">Meet your AI-powered study companion, tailored to your learning style!</p>
+        </div>
+
+        <div class="coach-container">
+            <div class="floating-elements">
+                <i class="fas fa-star floating-icon" style="top: 10%; left: 20%; font-size: 1.5rem; animation-delay: 0s;"></i>
+                <i class="fas fa-lightbulb floating-icon" style="top: 20%; right: 15%; font-size: 1.2rem; animation-delay: 1s;"></i>
+                <i class="fas fa-trophy floating-icon" style="bottom: 15%; left: 15%; font-size: 1.3rem; animation-delay: 2s;"></i>
+                <i class="fas fa-heart floating-icon" style="bottom: 20%; right: 20%; font-size: 1.1rem; animation-delay: 3s;"></i>
+            </div>
+            
+            <div class="coach-avatar">
+                {% if style == 'Visual' %}
+                    <i class="fas fa-eye text-white"></i>
+                {% elif style == 'Auditory' %}
+                    <i class="fas fa-volume-up text-white"></i>
+                {% else %}
+                    <i class="fas fa-hand-paper text-white"></i>
+                {% endif %}
+            </div>
+            
+            <h3 class="mb-3">
+                {% if style == 'Visual' %}
+                    Hi! I'm your Visual Learning Coach! 👁️
+                {% elif style == 'Auditory' %}
+                    Hi! I'm your Auditory Learning Coach! 🔊
+                {% else %}
+                    Hi! I'm your Kinesthetic Learning Coach! ✋
+                {% endif %}
+            </h3>
+            
+            <div class="coach-speech">
+                <h5 id="coachGreeting">Welcome back, learner!</h5>
+                <p id="coachMessage">
+                    {% if style == 'Visual' %}
+                        Today let's organize your notes into colors and diagrams! Visual learners like you thrive with organized, colorful information. I'm here to help you see your way to success!
+                    {% elif style == 'Auditory' %}
+                        Ready to talk through some concepts? Auditory learners like you learn best through discussion and sound. Let's make some noise about your studies!
+                    {% else %}
+                        Time to get hands-on with your learning! Kinesthetic learners like you need to move and do. Let's make learning an active adventure!
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comments me-2"></i>Chat with Your Coach
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-interface" id="chatHistory">
+                            <div class="coach-message">
+                                Hello! I'm excited to help you study more effectively. What subject are you working on today?
+                            </div>
+                        </div>
+                        
+                        <div class="input-group mt-3">
+                            <input type="text" class="form-control" id="userInput" placeholder="Ask me about studying, get tips, or just chat...">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-outline-primary btn-sm" onclick="askQuickQuestion('tips')">
+                                Study Tips
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="askQuickQuestion('motivation')">
+                                Need Motivation
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="askQuickQuestion('schedule')">
+                                Study Schedule
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="askQuickQuestion('break')">
+                                Taking a Break
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-calendar-day me-2"></i>Today's Focus
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="daily-tip">
+                            <h6>
+                                <i class="fas fa-star text-warning me-2"></i>Daily Tip
+                            </h6>
+                            <p class="mb-0" id="dailyTip">
+                                {% if style == 'Visual' %}
+                                    Use the "Rule of 3" - organize information into groups of three for better visual memory!
+                                {% elif style == 'Auditory' %}
+                                    Try the "Teach Back" method - explain concepts out loud as if teaching a friend!
+                                {% else %}
+                                    Take a "Walk and Think" break every 25 minutes to keep your body and mind active!
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="motivational-quote" id="motivationalQuote">
+                            "The expert in anything was once a beginner."
+                        </div>
+                        
+                        <div class="text-center">
+                            <button class="action-button" onclick="generateNewTip()">
+                                <i class="fas fa-lightbulb me-2"></i>New Tip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Your Progress
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress-tracker">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="fs-4 fw-bold text-primary" id="studyStreak">0</div>
+                                    <small class="text-muted">Day Streak</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fs-4 fw-bold text-success" id="tipsUsed">0</div>
+                                    <small class="text-muted">Tips Used</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fs-4 fw-bold text-info" id="chatCount">0</div>
+                                    <small class="text-muted">Chats</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <h6>Achievements</h6>
+                            <div id="achievements">
+                                <!-- Achievements will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-rocket me-2"></i>Quick Actions for {{ style }} Learners
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% if style == 'Visual' %}
+                            <div class="col-md-3 text-center">
+                                <a href="{{ url_for('memory_visual') }}" class="btn btn-outline-primary mb-2">
+                                    <i class="fas fa-gamepad d-block mb-2"></i>
+                                    Visual Memory Game
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="{{ url_for('mix_learning_style') }}" class="btn btn-outline-info mb-2">
+                                    <i class="fas fa-palette d-block mb-2"></i>
+                                    Create Mind Map
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="{{ url_for('note_analyzer') }}" class="btn btn-outline-success mb-2">
+                                    <i class="fas fa-camera d-block mb-2"></i>
+                                    Analyze Notes
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-warning mb-2" onclick="generateVisualTip()">
+                                    <i class="fas fa-eye d-block mb-2"></i>
+                                    Visual Study Tip
+                                </button>
+                            </div>
+                            {% elif style == 'Auditory' %}
+                            <div class="col-md-3 text-center">
+                                <a href="{{ url_for('memory_audio') }}" class="btn btn-outline-success mb-2">
+                                    <i class="fas fa-gamepad d-block mb-2"></i>
+                                    Audio Memory Game
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-info mb-2" onclick="startRecording()">
+                                    <i class="fas fa-microphone d-block mb-2"></i>
+                                    Record Notes
+                                </button>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-primary mb-2" onclick="generateAudioTip()">
+                                    <i class="fas fa-volume-up d-block mb-2"></i>
+                                    Audio Study Tip
+                                </button>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-warning mb-2" onclick="practiceExplaining()">
+                                    <i class="fas fa-comments d-block mb-2"></i>
+                                    Practice Explaining
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="col-md-3 text-center">
+                                <a href="{{ url_for('kinesthetic_game') }}" class="btn btn-outline-warning mb-2">
+                                    <i class="fas fa-gamepad d-block mb-2"></i>
+                                    Kinesthetic Game
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-info mb-2" onclick="startMovementBreak()">
+                                    <i class="fas fa-running d-block mb-2"></i>
+                                    Movement Break
+                                </button>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-success mb-2" onclick="handwritingPractice()">
+                                    <i class="fas fa-pen d-block mb-2"></i>
+                                    Handwriting Practice
+                                </button>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <button class="btn btn-outline-primary mb-2" onclick="generateKinestheticTip()">
+                                    <i class="fas fa-hand-paper d-block mb-2"></i>
+                                    Hands-On Tip
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let chatCount = 0;
+let tipsUsed = 0;
+
+const coachResponses = {
+    visual: {
+        tips: [
+            "Try using different colors for different topics - your brain loves visual organization!",
+            "Create a mind map instead of linear notes - visual connections help memory!",
+            "Use symbols and icons in your notes - pictures speak louder than words!",
+            "Draw diagrams even for non-visual subjects - make abstract concepts concrete!",
+            "Organize your study space with color-coded materials and visual reminders!"
+        ],
+        motivation: [
+            "You're a visual superstar! Your ability to see patterns and connections is amazing!",
+            "Every colorful note you make is a step toward mastering your subject!",
+            "Your visual mind is like a powerful camera - capture those learning moments!",
+            "Think of studying as creating a beautiful picture of knowledge in your mind!"
+        ],
+        schedule: [
+            "Plan your study schedule visually with a colorful calendar or chart!",
+            "Use timers with visual progress bars to stay on track!",
+            "Create a visual study roadmap with milestones and checkpoints!",
+            "Color-code your subjects and use visual cues for different activities!"
+        ]
+    },
+    auditory: {
+        tips: [
+            "Read your notes out loud - your ears are learning tools too!",
+            "Try studying with background music or nature sounds!",
+            "Explain concepts to yourself or others - talking helps memory!",
+            "Record key points and listen back during breaks or commutes!",
+            "Join study groups where you can discuss and debate topics!"
+        ],
+        motivation: [
+            "Your voice is your superpower! Keep talking through those concepts!",
+            "Every discussion makes you stronger - you're building knowledge through sound!",
+            "Your ability to learn through listening is a fantastic gift!",
+            "Trust your ears - they're guiding you to academic success!"
+        ],
+        schedule: [
+            "Set audio reminders and alarms for your study sessions!",
+            "Schedule regular discussion time with classmates or study partners!",
+            "Plan listening sessions for recorded lectures or educational podcasts!",
+            "Use voice notes to remind yourself of important tasks and deadlines!"
+        ]
+    },
+    kinesthetic: {
+        tips: [
+            "Take movement breaks every 25 minutes - your body needs to learn too!",
+            "Write notes by hand whenever possible - the physical act helps memory!",
+            "Use hands-on activities and real examples to understand concepts!",
+            "Study while standing or walking when possible!",
+            "Create physical models or use objects to represent abstract ideas!"
+        ],
+        motivation: [
+            "Your energy and movement are powerful learning tools!",
+            "Every step you take while studying strengthens your understanding!",
+            "Your hands-on approach makes learning real and meaningful!",
+            "Keep moving, keep learning - you're unstoppable!"
+        ],
+        schedule: [
+            "Include physical activity breaks in your study schedule!",
+            "Plan hands-on practice sessions for applying what you learn!",
+            "Schedule outdoor study sessions when weather permits!",
+            "Use physical movement to transition between different subjects!"
+        ]
+    }
+};
+
+const quotes = [
+    "The expert in anything was once a beginner.",
+    "Learning is a treasure that will follow its owner everywhere.",
+    "The beautiful thing about learning is that no one can take it away from you.",
+    "Education is the passport to the future.",
+    "Every expert was once a beginner. Every pro was once an amateur.",
+    "The more you learn, the more you earn... and the more you grow!",
+    "Success is the sum of small efforts repeated day in and day out.",
+    "Don't let what you cannot do interfere with what you can do."
+];
+
+function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    addMessage(message, 'user');
+    input.value = '';
+    
+    // Simulate coach response
+    setTimeout(() => {
+        const response = generateCoachResponse(message);
+        addMessage(response, 'coach');
+        updateChatCount();
+    }, 1000 + Math.random() * 2000);
+}
+
+function addMessage(message, sender) {
+    const chatHistory = document.getElementById('chatHistory');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = sender === 'user' ? 'user-message' : 'coach-message';
+    messageDiv.textContent = message;
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function generateCoachResponse(userMessage) {
+    const style = '{{ style }}'.toLowerCase();
+    const responses = coachResponses[style];
+    
+    if (userMessage.toLowerCase().includes('tip')) {
+        return responses.tips[Math.floor(Math.random() * responses.tips.length)];
+    } else if (userMessage.toLowerCase().includes('motivat') || userMessage.toLowerCase().includes('help')) {
+        return responses.motivation[Math.floor(Math.random() * responses.motivation.length)];
+    } else if (userMessage.toLowerCase().includes('schedule') || userMessage.toLowerCase().includes('plan')) {
+        return responses.schedule[Math.floor(Math.random() * responses.schedule.length)];
+    } else {
+        const allResponses = [...responses.tips, ...responses.motivation, ...responses.schedule];
+        return allResponses[Math.floor(Math.random() * allResponses.length)];
+    }
+}
+
+function askQuickQuestion(type) {
+    const questions = {
+        tips: "Can you give me a study tip?",
+        motivation: "I need some motivation to keep studying",
+        schedule: "How should I organize my study schedule?",
+        break: "I think I need a break, what should I do?"
+    };
+    
+    document.getElementById('userInput').value = questions[type];
+    sendMessage();
+}
+
+function generateNewTip() {
+    const style = '{{ style }}'.toLowerCase();
+    const tips = coachResponses[style].tips;
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    
+    document.getElementById('dailyTip').textContent = randomTip;
+    document.getElementById('motivationalQuote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+    
+    updateTipsUsed();
+}
+
+function updateChatCount() {
+    chatCount++;
+    document.getElementById('chatCount').textContent = chatCount;
+    localStorage.setItem('coachChatCount', chatCount);
+    checkAchievements();
+}
+
+function updateTipsUsed() {
+    tipsUsed++;
+    document.getElementById('tipsUsed').textContent = tipsUsed;
+    localStorage.setItem('coachTipsUsed', tipsUsed);
+    checkAchievements();
+}
+
+function checkAchievements() {
+    const achievements = [];
+    
+    if (chatCount >= 5) achievements.push("Chatty Learner");
+    if (chatCount >= 10) achievements.push("Coach's Buddy");
+    if (tipsUsed >= 3) achievements.push("Tip Collector");
+    if (tipsUsed >= 10) achievements.push("Wisdom Seeker");
+    
+    const achievementsDiv = document.getElementById('achievements');
+    achievementsDiv.innerHTML = '';
+    achievements.forEach(achievement => {
+        const badge = document.createElement('span');
+        badge.className = 'achievement-badge';
+        badge.innerHTML = `<i class="fas fa-trophy me-1"></i>${achievement}`;
+        achievementsDiv.appendChild(badge);
+    });
+}
+
+// Style-specific functions
+function generateVisualTip() {
+    addMessage("Can you give me a visual learning tip?", 'user');
+    setTimeout(() => {
+        const tip = coachResponses.visual.tips[Math.floor(Math.random() * coachResponses.visual.tips.length)];
+        addMessage(tip, 'coach');
+        updateChatCount();
+    }, 1000);
+}
+
+function generateAudioTip() {
+    addMessage("Can you give me an auditory learning tip?", 'user');
+    setTimeout(() => {
+        const tip = coachResponses.auditory.tips[Math.floor(Math.random() * coachResponses.auditory.tips.length)];
+        addMessage(tip, 'coach');
+        updateChatCount();
+    }, 1000);
+}
+
+function generateKinestheticTip() {
+    addMessage("Can you give me a hands-on learning tip?", 'user');
+    setTimeout(() => {
+        const tip = coachResponses.kinesthetic.tips[Math.floor(Math.random() * coachResponses.kinesthetic.tips.length)];
+        addMessage(tip, 'coach');
+        updateChatCount();
+    }, 1000);
+}
+
+function startRecording() {
+    alert("Recording feature would be implemented here! For now, try reading your notes out loud.");
+}
+
+function startMovementBreak() {
+    alert("Time for a 2-minute movement break! Try stretching, walking, or doing jumping jacks!");
+}
+
+function handwritingPractice() {
+    alert("Grab a pen and paper! Try rewriting your most important notes by hand.");
+}
+
+function practiceExplaining() {
+    alert("Find someone to explain a concept to, or try explaining it to yourself out loud!");
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load saved data
+    chatCount = parseInt(localStorage.getItem('coachChatCount') || '0');
+    tipsUsed = parseInt(localStorage.getItem('coachTipsUsed') || '0');
+    
+    document.getElementById('chatCount').textContent = chatCount;
+    document.getElementById('tipsUsed').textContent = tipsUsed;
+    
+    // Set study streak (simplified)
+    const streak = localStorage.getItem('currentStreak') || '0';
+    document.getElementById('studyStreak').textContent = streak;
+    
+    checkAchievements();
+    
+    // Allow Enter key to send messages
+    document.getElementById('userInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+});
+</script>
+{% endblock %}

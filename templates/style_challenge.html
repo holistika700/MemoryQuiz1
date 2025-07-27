@@ -1,0 +1,590 @@
+{% extends "base.html" %}
+
+{% block title %}Which Style Am I? Challenge{% endblock %}
+
+{% block extra_head %}
+<style>
+    .challenge-container {
+        background: linear-gradient(135deg, var(--bs-info-subtle), var(--bs-success-subtle));
+        border-radius: 20px;
+        border: 3px solid var(--bs-info);
+        padding: 30px;
+        text-align: center;
+        min-height: 400px;
+        position: relative;
+    }
+    
+    .scenario-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        border: 2px solid var(--bs-border-color);
+    }
+    
+    .answer-button {
+        background: var(--bs-light);
+        border: 2px solid var(--bs-border-color);
+        border-radius: 15px;
+        padding: 15px 20px;
+        margin: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .answer-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        border-color: var(--bs-primary);
+    }
+    
+    .answer-button.correct {
+        background: var(--bs-success);
+        color: white;
+        border-color: var(--bs-success);
+    }
+    
+    .answer-button.incorrect {
+        background: var(--bs-danger);
+        color: white;
+        border-color: var(--bs-danger);
+    }
+    
+    .answer-button.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .timer-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--bs-primary);
+        background: white;
+        border-radius: 50px;
+        padding: 10px 20px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .score-display {
+        background: var(--bs-warning);
+        color: var(--bs-dark);
+        border-radius: 50px;
+        padding: 10px 20px;
+        font-weight: bold;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .progress-bar-container {
+        background: var(--bs-light);
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 20px 0;
+        border: 2px solid var(--bs-border-color);
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--bs-primary), var(--bs-info));
+        transition: width 0.5s ease;
+    }
+    
+    .results-card {
+        background: linear-gradient(135deg, var(--bs-success-subtle), var(--bs-info-subtle));
+        border: 3px solid var(--bs-success);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        transform: scale(0);
+        transition: transform 0.5s ease;
+    }
+    
+    .results-card.show {
+        transform: scale(1);
+    }
+    
+    .performance-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin: 0.25rem;
+        font-weight: bold;
+    }
+    
+    .excellent { background: var(--bs-success); color: white; }
+    .good { background: var(--bs-info); color: white; }
+    .fair { background: var(--bs-warning); color: var(--bs-dark); }
+    .needs-improvement { background: var(--bs-danger); color: white; }
+    
+    .quick-fact {
+        background: var(--bs-info-subtle);
+        border-left: 4px solid var(--bs-info);
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 10px 10px 0;
+    }
+    
+    .floating-emoji {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.3;
+        animation: floatEmoji 4s ease-in-out infinite;
+    }
+    
+    @keyframes floatEmoji {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(5deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h2>💡 "Which Style Am I?" Challenge</h2>
+            <p class="lead">Can you identify the learning style in each scenario? Test your knowledge!</p>
+        </div>
+
+        <div id="gameArea">
+            <div class="challenge-container">
+                <div class="floating-emoji" style="top: 10%; left: 15%;">🧠</div>
+                <div class="floating-emoji" style="top: 20%; right: 20%; animation-delay: 1s;">💡</div>
+                <div class="floating-emoji" style="bottom: 15%; left: 20%; animation-delay: 2s;">🎯</div>
+                <div class="floating-emoji" style="bottom: 25%; right: 15%; animation-delay: 3s;">⭐</div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="timer-display" id="timerDisplay">30</div>
+                    <div class="score-display">
+                        Score: <span id="scoreDisplay">0</span>/<span id="totalQuestions">10</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+                
+                <div id="questionArea">
+                    <div class="scenario-card">
+                        <h4 id="questionNumber">Question 1</h4>
+                        <div class="quick-fact">
+                            <h6><i class="fas fa-user me-2"></i>Learning Scenario</h6>
+                            <p id="scenarioText" class="mb-0 fs-5">
+                                Loading scenario...
+                            </p>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">Which learning style does this describe?</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="answer-button" onclick="selectAnswer('Visual')">
+                                    <i class="fas fa-eye text-primary me-2"></i>
+                                    <strong>Visual Learner</strong><br>
+                                    <small class="text-muted">Learns through seeing</small>
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="answer-button" onclick="selectAnswer('Auditory')">
+                                    <i class="fas fa-volume-up text-success me-2"></i>
+                                    <strong>Auditory Learner</strong><br>
+                                    <small class="text-muted">Learns through hearing</small>
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="answer-button" onclick="selectAnswer('Kinesthetic')">
+                                    <i class="fas fa-hand-paper text-warning me-2"></i>
+                                    <strong>Kinesthetic Learner</strong><br>
+                                    <small class="text-muted">Learns through doing</small>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsArea" style="display: none;">
+            <div class="results-card">
+                <h3><i class="fas fa-trophy text-warning me-2"></i>Challenge Complete!</h3>
+                
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <h5>Your Performance</h5>
+                        <div class="row text-center mb-4">
+                            <div class="col-4">
+                                <div class="fs-3 fw-bold text-success" id="finalScore">0</div>
+                                <div>Correct Answers</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-3 fw-bold text-info" id="finalTime">00:00</div>
+                                <div>Time Taken</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-3 fw-bold text-warning" id="finalAccuracy">0%</div>
+                                <div>Accuracy</div>
+                            </div>
+                        </div>
+                        
+                        <div id="performanceBadge"></div>
+                        
+                        <div class="mt-4">
+                            <h6>What You Learned</h6>
+                            <ul id="learningPoints" class="text-start">
+                                <!-- Learning points will be added here -->
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h6>Learning Style Breakdown</h6>
+                        <canvas id="resultsChart" width="200" height="200"></canvas>
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                Based on your answers, you seem to understand 
+                                <span id="strongestStyle" class="fw-bold"></span> 
+                                learning best!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary btn-lg" onclick="restartChallenge()">
+                        <i class="fas fa-redo me-2"></i>Try Again
+                    </button>
+                    <a href="{{ url_for('quiz') }}" class="btn btn-outline-info ms-2">
+                        <i class="fas fa-user me-2"></i>Take Learning Style Quiz
+                    </a>
+                    <a href="{{ url_for('tips') }}" class="btn btn-outline-success ms-2">
+                        <i class="fas fa-lightbulb me-2"></i>Get Study Tips
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-info" onclick="startChallenge()" id="startButton">
+                <i class="fas fa-play me-2"></i>Start Challenge
+            </button>
+            <button class="btn btn-outline-secondary ms-2" onclick="showInstructions()">
+                <i class="fas fa-info-circle me-2"></i>How to Play
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Instructions Modal -->
+<div class="modal fade" id="instructionsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">How to Play</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-gamepad me-2"></i>Game Rules</h6>
+                        <ul>
+                            <li>You'll see 10 learning scenarios</li>
+                            <li>Each scenario describes how someone learns</li>
+                            <li>Choose the correct learning style</li>
+                            <li>You have 30 seconds per question</li>
+                            <li>Try to get the highest score!</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-graduation-cap me-2"></i>Learning Styles</h6>
+                        <div class="mb-2">
+                            <i class="fas fa-eye text-primary me-2"></i>
+                            <strong>Visual:</strong> Learning through seeing
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-volume-up text-success me-2"></i>
+                            <strong>Auditory:</strong> Learning through hearing
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-hand-paper text-warning me-2"></i>
+                            <strong>Kinesthetic:</strong> Learning through doing
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentQuestion = 0;
+let score = 0;
+let timeLeft = 30;
+let gameTimer = null;
+let questionTimer = null;
+let gameStartTime = null;
+let answers = [];
+
+const scenarios = [
+    {
+        text: "Sarah always draws diagrams and uses different colored pens to organize her notes. She finds it easier to remember information when she can visualize it.",
+        correct: "Visual",
+        explanation: "Using diagrams, colors, and visualization are classic visual learning techniques."
+    },
+    {
+        text: "Mike studies best when he listens to recorded lectures and discusses topics with classmates. He often reads his notes out loud to help remember them.",
+        correct: "Auditory",
+        explanation: "Learning through listening, discussion, and reading aloud are auditory learning methods."
+    },
+    {
+        text: "Emma prefers hands-on experiments and takes frequent movement breaks while studying. She learns math best by using physical objects to solve problems.",
+        correct: "Kinesthetic",
+        explanation: "Hands-on activities, movement, and physical manipulation indicate kinesthetic learning."
+    },
+    {
+        text: "Alex creates mind maps and flowcharts for every subject. He uses highlighting and visual organizers to structure information.",
+        correct: "Visual",
+        explanation: "Mind maps, flowcharts, and visual organizers are visual learning tools."
+    },
+    {
+        text: "Jordan joins study groups where she can explain concepts to others and hear different perspectives. She often uses verbal mnemonics.",
+        correct: "Auditory",
+        explanation: "Group discussions, explaining concepts verbally, and verbal mnemonics are auditory techniques."
+    },
+    {
+        text: "Taylor writes notes by hand and uses physical flashcards. He studies while walking around the room and needs to 'feel' the learning process.",
+        correct: "Kinesthetic",
+        explanation: "Handwriting, physical flashcards, and movement while studying are kinesthetic preferences."
+    },
+    {
+        text: "Lisa creates colorful charts and graphs to understand data. She prefers textbooks with lots of pictures and visual examples.",
+        correct: "Visual",
+        explanation: "Charts, graphs, pictures, and visual examples support visual learning."
+    },
+    {
+        text: "Ben learns foreign languages by listening to music and conversations. He practices pronunciation by repeating words out loud.",
+        correct: "Auditory",
+        explanation: "Learning through listening and verbal practice are auditory learning methods."
+    },
+    {
+        text: "Maya builds physical models and uses role-playing to understand historical events. She learns best when she can act out scenarios.",
+        correct: "Kinesthetic",
+        explanation: "Building models, role-playing, and acting out scenarios are kinesthetic learning activities."
+    },
+    {
+        text: "Chris organizes information into colorful bullet points and creates visual timelines. He uses symbols and icons in his notes.",
+        correct: "Visual",
+        explanation: "Colorful organization, visual timelines, and symbols are visual learning strategies."
+    }
+];
+
+function showInstructions() {
+    const modal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+    modal.show();
+}
+
+function startChallenge() {
+    currentQuestion = 0;
+    score = 0;
+    answers = [];
+    gameStartTime = Date.now();
+    
+    document.getElementById('gameArea').style.display = 'block';
+    document.getElementById('resultsArea').style.display = 'none';
+    document.getElementById('startButton').style.display = 'none';
+    
+    // Shuffle scenarios
+    scenarios.sort(() => Math.random() - 0.5);
+    
+    showQuestion();
+}
+
+function showQuestion() {
+    if (currentQuestion >= scenarios.length) {
+        endGame();
+        return;
+    }
+    
+    const scenario = scenarios[currentQuestion];
+    
+    document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1}`;
+    document.getElementById('scenarioText').textContent = scenario.text;
+    
+    // Reset answer buttons
+    const buttons = document.querySelectorAll('.answer-button');
+    buttons.forEach(button => {
+        button.className = 'answer-button';
+        button.disabled = false;
+    });
+    
+    // Update progress
+    const progress = ((currentQuestion) / scenarios.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    
+    // Start question timer
+    timeLeft = 30;
+    updateTimer();
+    questionTimer = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+        
+        if (timeLeft <= 0) {
+            selectAnswer(null); // Auto-select wrong answer
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    document.getElementById('timerDisplay').textContent = timeLeft;
+    
+    // Change color as time runs out
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timeLeft <= 10) {
+        timerDisplay.style.color = 'var(--bs-danger)';
+    } else if (timeLeft <= 20) {
+        timerDisplay.style.color = 'var(--bs-warning)';
+    } else {
+        timerDisplay.style.color = 'var(--bs-primary)';
+    }
+}
+
+function selectAnswer(selectedAnswer) {
+    clearInterval(questionTimer);
+    
+    const scenario = scenarios[currentQuestion];
+    const buttons = document.querySelectorAll('.answer-button');
+    const correct = selectedAnswer === scenario.correct;
+    
+    if (correct) {
+        score++;
+    }
+    
+    answers.push({
+        question: currentQuestion,
+        selected: selectedAnswer,
+        correct: scenario.correct,
+        isCorrect: correct,
+        timeSpent: 30 - timeLeft
+    });
+    
+    // Color the buttons
+    buttons.forEach(button => {
+        const buttonText = button.textContent.trim();
+        if (buttonText.includes(scenario.correct)) {
+            button.classList.add('correct');
+        } else if (selectedAnswer && buttonText.includes(selectedAnswer) && !correct) {
+            button.classList.add('incorrect');
+        }
+        button.disabled = true;
+    });
+    
+    // Update score display
+    document.getElementById('scoreDisplay').textContent = score;
+    
+    // Move to next question after delay
+    setTimeout(() => {
+        currentQuestion++;
+        showQuestion();
+    }, 2000);
+}
+
+function endGame() {
+    const totalTime = (Date.now() - gameStartTime) / 1000;
+    const accuracy = (score / scenarios.length) * 100;
+    
+    // Hide game area, show results
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('resultsArea').style.display = 'block';
+    
+    // Update results
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalTime').textContent = formatTime(totalTime);
+    document.getElementById('finalAccuracy').textContent = Math.round(accuracy) + '%';
+    
+    // Show performance badge
+    const badgeContainer = document.getElementById('performanceBadge');
+    let badgeClass, badgeText;
+    
+    if (accuracy >= 90) {
+        badgeClass = 'excellent';
+        badgeText = '🏆 Learning Style Expert!';
+    } else if (accuracy >= 70) {
+        badgeClass = 'good';
+        badgeText = '🌟 Great Understanding!';
+    } else if (accuracy >= 50) {
+        badgeClass = 'fair';
+        badgeText = '👍 Good Effort!';
+    } else {
+        badgeClass = 'needs-improvement';
+        badgeText = '📚 Keep Learning!';
+    }
+    
+    badgeContainer.innerHTML = `<span class="performance-badge ${badgeClass}">${badgeText}</span>`;
+    
+    // Show learning points
+    const learningPoints = document.getElementById('learningPoints');
+    const points = [
+        'Visual learners use colors, diagrams, and visual organization',
+        'Auditory learners prefer discussion, listening, and verbal techniques',
+        'Kinesthetic learners need movement, hands-on activities, and physical practice',
+        'Most people use a combination of all three styles',
+        'Understanding learning styles helps improve study effectiveness'
+    ];
+    
+    learningPoints.innerHTML = '';
+    points.forEach(point => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-check text-success me-2"></i>${point}`;
+        learningPoints.appendChild(li);
+    });
+    
+    // Animate results card
+    setTimeout(() => {
+        document.querySelector('.results-card').classList.add('show');
+    }, 100);
+    
+    // Save stats
+    saveGameStats(score, accuracy, totalTime);
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function restartChallenge() {
+    document.getElementById('startButton').style.display = 'inline-block';
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('resultsArea').style.display = 'none';
+    document.querySelector('.results-card').classList.remove('show');
+}
+
+function saveGameStats(score, accuracy, time) {
+    const stats = {
+        gamesPlayed: parseInt(localStorage.getItem('styleChallenge_gamesPlayed') || '0') + 1,
+        bestScore: Math.max(parseInt(localStorage.getItem('styleChallenge_bestScore') || '0'), score),
+        totalScore: parseInt(localStorage.getItem('styleChallenge_totalScore') || '0') + score,
+        bestAccuracy: Math.max(parseInt(localStorage.getItem('styleChallenge_bestAccuracy') || '0'), accuracy)
+    };
+    
+    Object.keys(stats).forEach(key => {
+        localStorage.setItem(`styleChallenge_${key}`, stats[key]);
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('totalQuestions').textContent = scenarios.length;
+});
+</script>
+{% endblock %}

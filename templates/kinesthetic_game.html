@@ -1,0 +1,771 @@
+{% extends "base.html" %}
+
+{% block title %}Kinesthetic Learning Game{% endblock %}
+
+{% block extra_head %}
+<style>
+    .game-container {
+        background: linear-gradient(135deg, var(--bs-warning-subtle), var(--bs-orange-subtle));
+        border-radius: 20px;
+        border: 3px solid var(--bs-warning);
+        padding: 30px;
+        text-align: center;
+        min-height: 500px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .action-zone {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        border: 3px dashed var(--bs-warning);
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .action-zone.active {
+        border-color: var(--bs-success);
+        background: var(--bs-success-subtle);
+        transform: scale(1.02);
+    }
+    
+    .sequence-button {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid var(--bs-border-color);
+        margin: 10px;
+        font-size: 2rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .sequence-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .sequence-button.active {
+        animation: pulse 0.6s ease-in-out;
+        border-color: var(--bs-success);
+        background: var(--bs-success);
+        color: white;
+    }
+    
+    .sequence-button.user-active {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary);
+        color: white;
+    }
+    
+    .sequence-button.wrong {
+        border-color: var(--bs-danger);
+        background: var(--bs-danger);
+        color: white;
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .gesture-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px;
+        border: 2px solid var(--bs-border-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .gesture-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--bs-primary);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .gesture-card.selected {
+        border-color: var(--bs-success);
+        background: var(--bs-success-subtle);
+    }
+    
+    .movement-indicator {
+        font-size: 3rem;
+        margin: 20px 0;
+        animation: bounce 1s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .timer-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 6px solid var(--bs-light);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .timer-progress {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 6px solid var(--bs-primary);
+        clip: rect(0, 50px, 100px, 0);
+        animation: countdown 10s linear;
+    }
+    
+    @keyframes countdown {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .score-counter {
+        background: var(--bs-primary);
+        color: white;
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .game-mode-selector {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 20px 0;
+    }
+    
+    .mode-button {
+        background: white;
+        border: 3px solid var(--bs-border-color);
+        border-radius: 15px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 150px;
+    }
+    
+    .mode-button:hover {
+        border-color: var(--bs-primary);
+        transform: translateY(-3px);
+    }
+    
+    .mode-button.selected {
+        border-color: var(--bs-success);
+        background: var(--bs-success-subtle);
+    }
+    
+    .celebration {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 4rem;
+        z-index: 10;
+        animation: celebrate 1s ease-out;
+    }
+    
+    @keyframes celebrate {
+        0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+    
+    .instruction-text {
+        font-size: 1.2rem;
+        color: var(--bs-dark);
+        margin: 15px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        border-left: 4px solid var(--bs-warning);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="text-center mb-4">
+            <h2>🏃 Kinesthetic Learning Game</h2>
+            <p class="lead">Learn through movement and action! Perfect for hands-on learners.</p>
+        </div>
+
+        <div id="modeSelection">
+            <div class="game-container">
+                <h3 class="mb-4">Choose Your Game Mode</h3>
+                
+                <div class="game-mode-selector">
+                    <div class="mode-button" onclick="selectMode('sequence')">
+                        <h5><i class="fas fa-hand-point-up text-primary mb-2"></i></h5>
+                        <h6>Pattern Sequence</h6>
+                        <p class="small text-muted">Repeat movement patterns</p>
+                    </div>
+                    
+                    <div class="mode-button" onclick="selectMode('gesture')">
+                        <h5><i class="fas fa-hand-paper text-success mb-2"></i></h5>
+                        <h6>Gesture Match</h6>
+                        <p class="small text-muted">Match hand gestures</p>
+                    </div>
+                    
+                    <div class="mode-button" onclick="selectMode('reaction')">
+                        <h5><i class="fas fa-bolt text-warning mb-2"></i></h5>
+                        <h6>Quick Reaction</h6>
+                        <p class="small text-muted">Fast response game</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Difficulty Level</h6>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="difficulty" id="easy" value="easy" checked>
+                        <label class="btn btn-outline-success" for="easy">Easy</label>
+                        
+                        <input type="radio" class="btn-check" name="difficulty" id="medium" value="medium">
+                        <label class="btn btn-outline-warning" for="medium">Medium</label>
+                        
+                        <input type="radio" class="btn-check" name="difficulty" id="hard" value="hard">
+                        <label class="btn btn-outline-danger" for="hard">Hard</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameArea" style="display: none;">
+            <div class="game-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="score-counter">
+                        Score: <span id="gameScore">0</span>
+                    </div>
+                    <div class="timer-circle" id="gameTimer">
+                        <div class="timer-progress" id="timerProgress"></div>
+                        <span id="timerText">10</span>
+                    </div>
+                    <div class="score-counter">
+                        Level: <span id="gameLevel">1</span>
+                    </div>
+                </div>
+                
+                <div class="instruction-text" id="gameInstructions">
+                    Get ready to start!
+                </div>
+                
+                <div class="action-zone" id="actionZone">
+                    <!-- Game content will be inserted here -->
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-secondary" onclick="pauseGame()">
+                        <i class="fas fa-pause me-2"></i>Pause
+                    </button>
+                    <button class="btn btn-outline-danger ms-2" onclick="quitGame()">
+                        <i class="fas fa-times me-2"></i>Quit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsArea" style="display: none;">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-trophy me-2"></i>Game Complete!</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Your Performance</h5>
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="fs-3 fw-bold text-success" id="finalScore">0</div>
+                                    <div>Final Score</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fs-3 fw-bold text-info" id="finalLevel">1</div>
+                                    <div>Level Reached</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fs-3 fw-bold text-warning" id="finalAccuracy">0%</div>
+                                    <div>Accuracy</div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Kinesthetic Learning Benefits</h6>
+                                <ul class="mb-0">
+                                    <li>Improved muscle memory and coordination</li>
+                                    <li>Better retention through physical practice</li>
+                                    <li>Enhanced focus through movement</li>
+                                    <li>Stronger neural pathways through action</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Study Tips Based on Your Game</h5>
+                            <ul id="studyTips">
+                                <!-- Tips will be generated based on performance -->
+                            </ul>
+                            
+                            <div class="text-center mt-4">
+                                <button class="btn btn-primary" onclick="playAgain()">
+                                    <i class="fas fa-redo me-2"></i>Play Again
+                                </button>
+                                <a href="{{ url_for('tips') }}" class="btn btn-outline-success ms-2">
+                                    <i class="fas fa-graduation-cap me-2"></i>More Study Tips
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentMode = null;
+let difficulty = 'easy';
+let gameScore = 0;
+let gameLevel = 1;
+let currentSequence = [];
+let userSequence = [];
+let gameTimer = null;
+let correctAnswers = 0;
+let totalQuestions = 0;
+
+// Game configurations
+const gameConfig = {
+    easy: { time: 10, sequenceLength: 3, speed: 1000 },
+    medium: { time: 8, sequenceLength: 4, speed: 800 },
+    hard: { time: 6, sequenceLength: 5, speed: 600 }
+};
+
+const gestures = [
+    { icon: '👋', name: 'Wave', action: 'Wave your hand' },
+    { icon: '👍', name: 'Thumbs Up', action: 'Give a thumbs up' },
+    { icon: '✋', name: 'High Five', action: 'Raise your hand' },
+    { icon: '👏', name: 'Clap', action: 'Clap your hands' },
+    { icon: '☝️', name: 'Point Up', action: 'Point upward' },
+    { icon: '👌', name: 'OK Sign', action: 'Make OK sign' }
+];
+
+const patterns = ['⬆️', '⬇️', '⬅️', '➡️', '🔄', '↗️', '↘️', '↖️', '↙️'];
+
+function selectMode(mode) {
+    currentMode = mode;
+    
+    // Visual feedback
+    document.querySelectorAll('.mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    event.target.closest('.mode-button').classList.add('selected');
+    
+    // Get difficulty
+    difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+    
+    setTimeout(() => {
+        startGame();
+    }, 500);
+}
+
+function startGame() {
+    document.getElementById('modeSelection').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+    
+    gameScore = 0;
+    gameLevel = 1;
+    correctAnswers = 0;
+    totalQuestions = 0;
+    
+    updateGameDisplay();
+    
+    switch(currentMode) {
+        case 'sequence':
+            startSequenceGame();
+            break;
+        case 'gesture':
+            startGestureGame();
+            break;
+        case 'reaction':
+            startReactionGame();
+            break;
+    }
+}
+
+function startSequenceGame() {
+    document.getElementById('gameInstructions').textContent = 
+        'Watch the pattern, then repeat it by clicking the buttons in the same order!';
+    
+    createSequenceButtons();
+    showSequence();
+}
+
+function createSequenceButtons() {
+    const actionZone = document.getElementById('actionZone');
+    actionZone.innerHTML = '';
+    
+    for (let i = 0; i < 6; i++) {
+        const button = document.createElement('button');
+        button.className = 'sequence-button';
+        button.style.background = `hsl(${i * 60}, 70%, 60%)`;
+        button.textContent = patterns[i];
+        button.onclick = () => addToUserSequence(i);
+        actionZone.appendChild(button);
+    }
+}
+
+function showSequence() {
+    userSequence = [];
+    const config = gameConfig[difficulty];
+    const sequenceLength = Math.min(config.sequenceLength + Math.floor(gameLevel / 3), 8);
+    
+    currentSequence = [];
+    for (let i = 0; i < sequenceLength; i++) {
+        currentSequence.push(Math.floor(Math.random() * 6));
+    }
+    
+    let index = 0;
+    const showInterval = setInterval(() => {
+        if (index > 0) {
+            document.querySelectorAll('.sequence-button')[currentSequence[index - 1]]
+                .classList.remove('active');
+        }
+        
+        if (index < currentSequence.length) {
+            document.querySelectorAll('.sequence-button')[currentSequence[index]]
+                .classList.add('active');
+            index++;
+        } else {
+            clearInterval(showInterval);
+            document.querySelectorAll('.sequence-button')[currentSequence[index - 1]]
+                .classList.remove('active');
+            
+            document.getElementById('gameInstructions').textContent = 
+                'Now repeat the pattern by clicking the buttons!';
+            startGameTimer();
+        }
+    }, config.speed);
+}
+
+function addToUserSequence(buttonIndex) {
+    userSequence.push(buttonIndex);
+    
+    const button = document.querySelectorAll('.sequence-button')[buttonIndex];
+    button.classList.add('user-active');
+    setTimeout(() => button.classList.remove('user-active'), 200);
+    
+    // Check if correct so far
+    if (userSequence[userSequence.length - 1] !== currentSequence[userSequence.length - 1]) {
+        // Wrong answer
+        button.classList.add('wrong');
+        setTimeout(() => button.classList.remove('wrong'), 500);
+        endRound(false);
+        return;
+    }
+    
+    // Check if sequence complete
+    if (userSequence.length === currentSequence.length) {
+        endRound(true);
+    }
+}
+
+function startGestureGame() {
+    document.getElementById('gameInstructions').textContent = 
+        'Perform the gesture shown on the screen!';
+    
+    showGestureChallenge();
+}
+
+function showGestureChallenge() {
+    const actionZone = document.getElementById('actionZone');
+    const randomGesture = gestures[Math.floor(Math.random() * gestures.length)];
+    
+    actionZone.innerHTML = `
+        <div class="movement-indicator">${randomGesture.icon}</div>
+        <h4>${randomGesture.name}</h4>
+        <p>${randomGesture.action}</p>
+        <button class="btn btn-success btn-lg mt-3" onclick="gestureCompleted()">
+            <i class="fas fa-check me-2"></i>I Did It!
+        </button>
+    `;
+    
+    startGameTimer();
+}
+
+function gestureCompleted() {
+    endRound(true);
+    celebrate();
+}
+
+function startReactionGame() {
+    document.getElementById('gameInstructions').textContent = 
+        'When you see GO!, click as fast as you can!';
+    
+    showReactionChallenge();
+}
+
+function showReactionChallenge() {
+    const actionZone = document.getElementById('actionZone');
+    actionZone.innerHTML = `
+        <div class="movement-indicator">⏳</div>
+        <h4>Get Ready...</h4>
+        <p>Click when you see GO!</p>
+    `;
+    
+    const delay = 2000 + Math.random() * 3000; // 2-5 seconds
+    
+    setTimeout(() => {
+        actionZone.innerHTML = `
+            <div class="movement-indicator" style="color: var(--bs-success);">🟢</div>
+            <h2 style="color: var(--bs-success);">GO!</h2>
+            <button class="btn btn-success btn-lg" onclick="reactionClick()" id="reactionButton">
+                <i class="fas fa-hand-pointer me-2"></i>CLICK NOW!
+            </button>
+        `;
+        
+        const startTime = Date.now();
+        window.reactionStartTime = startTime;
+        
+        // Auto-fail after 3 seconds
+        setTimeout(() => {
+            if (window.reactionStartTime === startTime) {
+                endRound(false);
+            }
+        }, 3000);
+    }, delay);
+}
+
+function reactionClick() {
+    const reactionTime = Date.now() - window.reactionStartTime;
+    window.reactionStartTime = null;
+    
+    const actionZone = document.getElementById('actionZone');
+    actionZone.innerHTML = `
+        <div class="movement-indicator">⚡</div>
+        <h4>Reaction Time: ${reactionTime}ms</h4>
+        <p>${reactionTime < 500 ? 'Lightning fast!' : reactionTime < 800 ? 'Great reaction!' : 'Good effort!'}</p>
+    `;
+    
+    endRound(reactionTime < 1000);
+}
+
+function startGameTimer() {
+    const config = gameConfig[difficulty];
+    let timeLeft = config.time;
+    
+    document.getElementById('timerText').textContent = timeLeft;
+    
+    gameTimer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timerText').textContent = timeLeft;
+        
+        if (timeLeft <= 0) {
+            clearInterval(gameTimer);
+            endRound(false);
+        }
+    }, 1000);
+}
+
+function endRound(success) {
+    if (gameTimer) {
+        clearInterval(gameTimer);
+        gameTimer = null;
+    }
+    
+    totalQuestions++;
+    
+    if (success) {
+        correctAnswers++;
+        gameScore += gameLevel * 10;
+        celebrate();
+        
+        setTimeout(() => {
+            gameLevel++;
+            nextRound();
+        }, 1500);
+    } else {
+        setTimeout(() => {
+            endGame();
+        }, 1500);
+    }
+    
+    updateGameDisplay();
+}
+
+function nextRound() {
+    switch(currentMode) {
+        case 'sequence':
+            showSequence();
+            break;
+        case 'gesture':
+            showGestureChallenge();
+            break;
+        case 'reaction':
+            showReactionChallenge();
+            break;
+    }
+}
+
+function celebrate() {
+    const actionZone = document.getElementById('actionZone');
+    const celebration = document.createElement('div');
+    celebration.className = 'celebration';
+    celebration.textContent = '🎉';
+    actionZone.appendChild(celebration);
+    
+    setTimeout(() => {
+        celebration.remove();
+    }, 1000);
+}
+
+function updateGameDisplay() {
+    document.getElementById('gameScore').textContent = gameScore;
+    document.getElementById('gameLevel').textContent = gameLevel;
+}
+
+function pauseGame() {
+    if (gameTimer) {
+        clearInterval(gameTimer);
+        gameTimer = null;
+    }
+    
+    const actionZone = document.getElementById('actionZone');
+    actionZone.innerHTML = `
+        <div class="movement-indicator">⏸️</div>
+        <h4>Game Paused</h4>
+        <button class="btn btn-primary btn-lg" onclick="resumeGame()">
+            <i class="fas fa-play me-2"></i>Resume
+        </button>
+    `;
+}
+
+function resumeGame() {
+    nextRound();
+}
+
+function quitGame() {
+    endGame();
+}
+
+function endGame() {
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('resultsArea').style.display = 'block';
+    
+    const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+    
+    document.getElementById('finalScore').textContent = gameScore;
+    document.getElementById('finalLevel').textContent = gameLevel;
+    document.getElementById('finalAccuracy').textContent = Math.round(accuracy) + '%';
+    
+    // Generate study tips based on game mode and performance
+    const studyTips = generateStudyTips();
+    const tipsList = document.getElementById('studyTips');
+    tipsList.innerHTML = '';
+    
+    studyTips.forEach(tip => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-check text-success me-2"></i>${tip}`;
+        tipsList.appendChild(li);
+    });
+    
+    // Save game statistics
+    saveGameStats();
+}
+
+function generateStudyTips() {
+    const tips = [
+        'Take movement breaks every 25 minutes while studying',
+        'Write notes by hand to improve retention',
+        'Use physical flashcards instead of digital ones',
+        'Study while standing or walking when possible',
+        'Create physical models or diagrams',
+        'Practice concepts through role-playing',
+        'Use gestures while memorizing information'
+    ];
+    
+    if (currentMode === 'sequence') {
+        tips.push('Practice organizing information in sequences');
+        tips.push('Use step-by-step physical processes to learn');
+    } else if (currentMode === 'gesture') {
+        tips.push('Associate hand movements with key concepts');
+        tips.push('Use sign language or gestures while studying');
+    } else if (currentMode === 'reaction') {
+        tips.push('Practice quick recall with physical responses');
+        tips.push('Use timed physical activities for learning');
+    }
+    
+    return tips.slice(0, 5);
+}
+
+function saveGameStats() {
+    const stats = {
+        gamesPlayed: parseInt(localStorage.getItem('kinesthetic_gamesPlayed') || '0') + 1,
+        bestScore: Math.max(parseInt(localStorage.getItem('kinesthetic_bestScore') || '0'), gameScore),
+        totalScore: parseInt(localStorage.getItem('kinesthetic_totalScore') || '0') + gameScore
+    };
+    
+    Object.keys(stats).forEach(key => {
+        localStorage.setItem(`kinesthetic_${key}`, stats[key]);
+    });
+}
+
+function playAgain() {
+    document.getElementById('resultsArea').style.display = 'none';
+    document.getElementById('modeSelection').style.display = 'block';
+    
+    // Reset all game state
+    currentMode = null;
+    gameScore = 0;
+    gameLevel = 1;
+    correctAnswers = 0;
+    totalQuestions = 0;
+    
+    // Clear any running timers
+    if (gameTimer) {
+        clearInterval(gameTimer);
+        gameTimer = null;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Any initialization code here
+});
+</script>
+{% endblock %}
