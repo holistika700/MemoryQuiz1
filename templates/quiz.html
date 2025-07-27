@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Style Quiz{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-4">
+            <h2><i class="fas fa-clipboard-question me-2"></i>Learning Style Assessment</h2>
+            <p class="lead">Answer each question by selecting the option that best describes you.</p>
+        </div>
+
+        <form method="POST" class="needs-validation" novalidate>
+            <div class="progress mb-4">
+                <div class="progress-bar" role="progressbar" style="width: 0%" id="progress-bar"></div>
+            </div>
+
+            <div class="question-container">
+                <div class="card mb-4 question-card active" data-question="1">
+                    <div class="card-header">
+                        <h5>Question 1 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When learning something new, I prefer to:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q1" value="Visual" id="q1a">
+                            <label class="form-check-label" for="q1a">See diagrams, pictures, or written instructions</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q1" value="Auditory" id="q1b">
+                            <label class="form-check-label" for="q1b">Listen to explanations or discussions</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q1" value="Kinesthetic" id="q1c">
+                            <label class="form-check-label" for="q1c">Try it out hands-on or practice it myself</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="2">
+                    <div class="card-header">
+                        <h5>Question 2 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When I need to remember a phone number, I:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q2" value="Visual" id="q2a">
+                            <label class="form-check-label" for="q2a">Picture the numbers in my mind</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q2" value="Auditory" id="q2b">
+                            <label class="form-check-label" for="q2b">Repeat the numbers out loud</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q2" value="Kinesthetic" id="q2c">
+                            <label class="form-check-label" for="q2c">Write the numbers down</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="3">
+                    <div class="card-header">
+                        <h5>Question 3 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">I learn best when the teacher:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q3" value="Visual" id="q3a">
+                            <label class="form-check-label" for="q3a">Uses the whiteboard or shows slides</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q3" value="Auditory" id="q3b">
+                            <label class="form-check-label" for="q3b">Explains things verbally</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q3" value="Kinesthetic" id="q3c">
+                            <label class="form-check-label" for="q3c">Provides hands-on activities</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="4">
+                    <div class="card-header">
+                        <h5>Question 4 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When giving directions, I prefer to:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q4" value="Visual" id="q4a">
+                            <label class="form-check-label" for="q4a">Draw a map or write them down</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q4" value="Auditory" id="q4b">
+                            <label class="form-check-label" for="q4b">Explain them verbally</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q4" value="Kinesthetic" id="q4c">
+                            <label class="form-check-label" for="q4c">Walk through the route with them</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="5">
+                    <div class="card-header">
+                        <h5>Question 5 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When reading, I:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q5" value="Visual" id="q5a">
+                            <label class="form-check-label" for="q5a">Like books with pictures and diagrams</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q5" value="Auditory" id="q5b">
+                            <label class="form-check-label" for="q5b">Prefer audiobooks or reading aloud</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q5" value="Kinesthetic" id="q5c">
+                            <label class="form-check-label" for="q5c">Like to take notes or highlight text</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="6">
+                    <div class="card-header">
+                        <h5>Question 6 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">In my free time, I enjoy:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q6" value="Visual" id="q6a">
+                            <label class="form-check-label" for="q6a">Watching movies or looking at art</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q6" value="Auditory" id="q6b">
+                            <label class="form-check-label" for="q6b">Listening to music or podcasts</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q6" value="Kinesthetic" id="q6c">
+                            <label class="form-check-label" for="q6c">Playing sports or doing crafts</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="7">
+                    <div class="card-header">
+                        <h5>Question 7 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When studying for a test, I:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q7" value="Visual" id="q7a">
+                            <label class="form-check-label" for="q7a">Make charts, graphs, or flashcards</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q7" value="Auditory" id="q7b">
+                            <label class="form-check-label" for="q7b">Read my notes out loud or discuss with others</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q7" value="Kinesthetic" id="q7c">
+                            <label class="form-check-label" for="q7c">Practice problems or create study aids</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="8">
+                    <div class="card-header">
+                        <h5>Question 8 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When I'm thinking, I tend to:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q8" value="Visual" id="q8a">
+                            <label class="form-check-label" for="q8a">Picture things in my mind</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q8" value="Auditory" id="q8b">
+                            <label class="form-check-label" for="q8b">Talk through problems mentally</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q8" value="Kinesthetic" id="q8c">
+                            <label class="form-check-label" for="q8c">Fidget or move around</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="9">
+                    <div class="card-header">
+                        <h5>Question 9 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">When learning to use new software, I:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q9" value="Visual" id="q9a">
+                            <label class="form-check-label" for="q9a">Look at screenshots or watch video tutorials</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q9" value="Auditory" id="q9b">
+                            <label class="form-check-label" for="q9b">Listen to someone explain it</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q9" value="Kinesthetic" id="q9c">
+                            <label class="form-check-label" for="q9c">Jump in and start clicking around</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 question-card" data-question="10">
+                    <div class="card-header">
+                        <h5>Question 10 of 10</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="question-text">I remember people best by their:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q10" value="Visual" id="q10a">
+                            <label class="form-check-label" for="q10a">Face and appearance</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="q10" value="Auditory" id="q10b">
+                            <label class="form-check-label" for="q10b">Voice and name</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="q10" value="Kinesthetic" id="q10c">
+                            <label class="form-check-label" for="q10c">What they did or how we interacted</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn btn-outline-secondary" id="prevBtn" style="display: none;">
+                    <i class="fas fa-chevron-left me-2"></i>Previous
+                </button>
+                <button type="button" class="btn btn-primary" id="nextBtn">
+                    Next<i class="fas fa-chevron-right ms-2"></i>
+                </button>
+                <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                    <i class="fas fa-check me-2"></i>Get Results
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentQuestion = 1;
+const totalQuestions = 10;
+
+function showQuestion(questionNum) {
+    document.querySelectorAll('.question-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    document.querySelector(`[data-question="${questionNum}"]`).classList.add('active');
+    
+    // Update progress bar
+    const progress = (questionNum / totalQuestions) * 100;
+    document.getElementById('progress-bar').style.width = progress + '%';
+    
+    // Update navigation buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    prevBtn.style.display = questionNum > 1 ? 'block' : 'none';
+    
+    if (questionNum === totalQuestions) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+    } else {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+    }
+}
+
+document.getElementById('nextBtn').addEventListener('click', function() {
+    const currentQuestionCard = document.querySelector(`[data-question="${currentQuestion}"]`);
+    const selectedAnswer = currentQuestionCard.querySelector('input[type="radio"]:checked');
+    
+    if (!selectedAnswer) {
+        alert('Please select an answer before continuing.');
+        return;
+    }
+    
+    if (currentQuestion < totalQuestions) {
+        currentQuestion++;
+        showQuestion(currentQuestion);
+    }
+});
+
+document.getElementById('prevBtn').addEventListener('click', function() {
+    if (currentQuestion > 1) {
+        currentQuestion--;
+        showQuestion(currentQuestion);
+    }
+});
+
+// Initialize
+showQuestion(1);
+
+// Add CSS for question transitions
+const style = document.createElement('style');
+style.textContent = `
+    .question-card {
+        display: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .question-card.active {
+        display: block;
+        opacity: 1;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

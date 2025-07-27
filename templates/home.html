@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-brain text-primary me-3"></i>
+                Discover Your Learning Style
+            </h1>
+            <p class="lead">Take our comprehensive assessment to understand how you learn best and unlock your potential through personalized memory games and learning strategies.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-question fa-3x text-primary mb-3"></i>
+                        <h4>Learning Style Quiz</h4>
+                        <p class="card-text">Answer 10 questions to discover whether you're a visual, auditory, or kinesthetic learner.</p>
+                        <a href="{{ url_for('quiz') }}" class="btn btn-primary">Start Quiz</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-gamepad fa-3x text-success mb-3"></i>
+                        <h4>Memory Games</h4>
+                        <p class="card-text">Train your memory with games designed for different learning styles.</p>
+                        <div class="btn-group-vertical d-grid gap-2">
+                            <a href="{{ url_for('memory') }}" class="btn btn-outline-success">Basic Memory</a>
+                            <a href="{{ url_for('memory_visual') }}" class="btn btn-outline-success">Visual Memory</a>
+                            <a href="{{ url_for('memory_audio') }}" class="btn btn-outline-success">Audio Memory</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                        <h4>Learning Tips</h4>
+                        <p class="card-text">Get personalized study tips based on your learning style.</p>
+                        <a href="{{ url_for('tips') }}" class="btn btn-outline-warning">View Tips</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                        <h4>About Learning Styles</h4>
+                        <p class="card-text">Learn about different learning styles and how they affect education.</p>
+                        <a href="{{ url_for('about') }}" class="btn btn-outline-info">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if not session.get('student_id') and not current_user.is_authenticated %}
+        <div class="row mt-5">
+            <div class="col-md-8 mx-auto">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">For Students</h5>
+                        <p class="card-text">Register with your teacher's code to save your progress and let your teacher track your learning journey.</p>
+                        <a href="{{ url_for('student_register') }}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Register as Student
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

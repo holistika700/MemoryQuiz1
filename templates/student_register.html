@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="text-center mb-4">
+            <h2><i class="fas fa-user-plus me-2"></i>Student Registration</h2>
+            <p class="lead">Register with your teacher to save your progress and results</p>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-user me-2"></i>Full Name *
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="invalid-feedback">
+                            Please provide your full name.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email Address (Optional)
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email">
+                        <div class="form-text">
+                            Your email is optional but helps your teacher contact you if needed.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="teacher_code" class="form-label">
+                            <i class="fas fa-key me-2"></i>Teacher Code *
+                        </label>
+                        <input type="text" class="form-control" id="teacher_code" name="teacher_code" required 
+                               placeholder="Ask your teacher for this code">
+                        <div class="invalid-feedback">
+                            Please enter your teacher's code.
+                        </div>
+                        <div class="form-text">
+                            This code connects you to your teacher's dashboard so they can track your progress.
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-user-check me-2"></i>Register
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <h6 class="text-muted">What happens after registration?</h6>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-clipboard-question fa-2x text-primary mb-2"></i>
+                                <small>Take the learning style quiz</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-gamepad fa-2x text-success mb-2"></i>
+                                <small>Play memory games and save scores</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                                <small>Your teacher can track your progress</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

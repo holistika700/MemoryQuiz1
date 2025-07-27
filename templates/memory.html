@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Basic Memory Game{% endblock %}
+
+{% block extra_head %}
+<style>
+    .game-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+        padding: 20px;
+        background: var(--bs-dark);
+        border-radius: 10px;
+    }
+    .memory-card {
+        aspect-ratio: 1;
+        background: var(--bs-secondary);
+        border: 2px solid var(--bs-border-color);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    .memory-card:hover {
+        background: var(--bs-light);
+        transform: scale(1.05);
+    }
+    .memory-card.flipped {
+        background: var(--bs-info);
+        color: white;
+    }
+    .memory-card.matched {
+        background: var(--bs-success);
+        color: white;
+        cursor: default;
+    }
+    .memory-card.matched:hover {
+        transform: none;
+    }
+    .game-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: var(--bs-dark);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        flex: 1;
+        margin: 0 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <div class="text-center mb-4">
+        <h2><i class="fas fa-brain me-2"></i>Basic Memory Game</h2>
+        <p class="lead">Match pairs of emojis to test your memory!</p>
+    </div>
+
+    <div class="game-stats">
+        <div class="stat-card">
+            <h6 class="mb-1">Moves</h6>
+            <span id="moves-count" class="h4">0</span>
+        </div>
+        <div class="stat-card">
+            <h6 class="mb-1">Time</h6>
+            <span id="timer" class="h4">0:00</span>
+        </div>
+        <div class="stat-card">
+            <h6 class="mb-1">Matches</h6>
+            <span id="matches-count" class="h4">0/8</span>
+        </div>
+    </div>
+
+    <div class="text-center mb-3">
+        <button id="start-btn" class="btn btn-primary">
+            <i class="fas fa-play me-2"></i>Start Game
+        </button>
+        <button id="reset-btn" class="btn btn-outline-secondary" style="display: none;">
+            <i class="fas fa-redo me-2"></i>Reset
+        </button>
+    </div>
+
+    <div id="game-board" class="game-grid"></div>
+
+    <div id="game-complete" class="alert alert-success text-center" style="display: none;">
+        <h4><i class="fas fa-trophy me-2"></i>Congratulations!</h4>
+        <p>You completed the game in <span id="final-time"></span> with <span id="final-moves"></span> moves!</p>
+        <button class="btn btn-success" onclick="playAgain()">
+            <i class="fas fa-play me-2"></i>Play Again
+        </button>
+    </div>
+
+    <div class="text-center mt-4">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('memory_visual') }}" class="btn btn-outline-primary">
+                <i class="fas fa-eye me-2"></i>Visual Memory
+            </a>
+            <a href="{{ url_for('memory_audio') }}" class="btn btn-outline-success">
+                <i class="fas fa-volume-up me-2"></i>Audio Memory
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='memory.js') }}"></script>
+{% endblock %}

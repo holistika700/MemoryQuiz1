@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Your Learning Style Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-4">
+            <h2><i class="fas fa-chart-pie me-2"></i>Your Learning Style Results</h2>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h3 class="mb-3">Your Dominant Learning Style:</h3>
+                {% if dominant == 'Visual' %}
+                    <div class="display-1 text-primary mb-3">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h2 class="text-primary">Visual Learner</h2>
+                    <p class="lead">You learn best through seeing and visualizing information.</p>
+                {% elif dominant == 'Auditory' %}
+                    <div class="display-1 text-success mb-3">
+                        <i class="fas fa-volume-up"></i>
+                    </div>
+                    <h2 class="text-success">Auditory Learner</h2>
+                    <p class="lead">You learn best through hearing and discussing information.</p>
+                {% else %}
+                    <div class="display-1 text-warning mb-3">
+                        <i class="fas fa-hand-paper"></i>
+                    </div>
+                    <h2 class="text-warning">Kinesthetic Learner</h2>
+                    <p class="lead">You learn best through hands-on activities and movement.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-eye fa-2x text-primary mb-2"></i>
+                        <h5>Visual</h5>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                 style="width: {{ (scores.Visual / 10 * 100) }}%">
+                                {{ scores.Visual }}/10
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-volume-up fa-2x text-success mb-2"></i>
+                        <h5>Auditory</h5>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ (scores.Auditory / 10 * 100) }}%">
+                                {{ scores.Auditory }}/10
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-hand-paper fa-2x text-warning mb-2"></i>
+                        <h5>Kinesthetic</h5>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {{ (scores.Kinesthetic / 10 * 100) }}%">
+                                {{ scores.Kinesthetic }}/10
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">What This Means for You</h5>
+                {% if dominant == 'Visual' %}
+                    <p>As a visual learner, you process information best when you can see it. You benefit from:</p>
+                    <ul>
+                        <li>Diagrams, charts, and graphs</li>
+                        <li>Color-coding and highlighting</li>
+                        <li>Mind maps and visual organizers</li>
+                        <li>Written instructions and notes</li>
+                        <li>Flashcards with images</li>
+                    </ul>
+                {% elif dominant == 'Auditory' %}
+                    <p>As an auditory learner, you process information best when you can hear it. You benefit from:</p>
+                    <ul>
+                        <li>Listening to lectures and discussions</li>
+                        <li>Reading aloud or using audiobooks</li>
+                        <li>Participating in group discussions</li>
+                        <li>Using mnemonics and rhymes</li>
+                        <li>Recording and replaying lessons</li>
+                    </ul>
+                {% else %}
+                    <p>As a kinesthetic learner, you process information best through movement and hands-on activities. You benefit from:</p>
+                    <ul>
+                        <li>Hands-on experiments and activities</li>
+                        <li>Taking breaks to move around</li>
+                        <li>Using manipulatives and models</li>
+                        <li>Writing notes by hand</li>
+                        <li>Role-playing and simulations</li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('tips') }}" class="btn btn-primary">
+                    <i class="fas fa-lightbulb me-2"></i>Get Learning Tips
+                </a>
+                {% if dominant == 'Visual' %}
+                    <a href="{{ url_for('memory_visual') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-gamepad me-2"></i>Try Visual Memory Game
+                    </a>
+                {% elif dominant == 'Auditory' %}
+                    <a href="{{ url_for('memory_audio') }}" class="btn btn-outline-success">
+                        <i class="fas fa-gamepad me-2"></i>Try Audio Memory Game
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('memory') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-gamepad me-2"></i>Try Memory Game
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('restart') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-redo me-2"></i>Retake Quiz
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
